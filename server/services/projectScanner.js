@@ -87,9 +87,22 @@ export async function enrichCandidates(candidates, concurrency = 6) {
   return output.filter(Boolean);
 }
 
+/**
+ * 规范化用户输入的路径。
+ * 关键点：Windows 下裸盘符（如 "D:"）是「驱动器相对路径」而非「驱动器根」，
+ * path.resolve('D:') 会沿用当前工作目录的同盘符部分，导致解析到错误目录。
+ * 这里把 "D:" / "D" 这类输入规范为驱动器根 "D:\" 再交给 path.resolve。
+ */
+export function normalizePath(input) {
+  let p = String(input || '').trim();
+  if (/^[A-Za-z]:$/.test(p)) p = `${p}\\`;
+  else if (/^[A-Za-z]$/.test(p)) p = `${p}:\\`;
+  return path.resolve(p);
+}
+
 /** 目录浏览（供前端目录选择器使用） */
 export async function browseDirectory(targetPath) {
-  const resolved = path.resolve(targetPath);
+  const resolved = normalizePath(targetPath);
   const stat = await fs.stat(resolved);
   if (!stat.isDirectory()) throw new Error('目标不是一个目录');
 

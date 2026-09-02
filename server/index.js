@@ -12,7 +12,7 @@ import { fileURLToPath } from 'node:url';
 import * as store from './store.js';
 import { detectTechStack, getProjectMeta, getGitInfo } from './services/techStackDetect.js';
 import { getEditors, openWithEditor, revealInExplorer, openInTerminal, clearEditorCache } from './services/editorCommands.js';
-import { scanDirectory, enrichCandidates, browseDirectory, listDrives } from './services/projectScanner.js';
+import { scanDirectory, enrichCandidates, browseDirectory, listDrives, normalizePath } from './services/projectScanner.js';
 import { startBuild, stopBuild, getJob, serializeJob, listJobs, subscribeJob } from './services/buildRunner.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -366,7 +366,7 @@ app.get('/api/fs/roots', (_req, res) => {
 app.post('/api/scan', asyncHandler(async (req, res) => {
   const { rootPath, maxDepth = 3 } = req.body || {};
   if (!rootPath) throw httpError(400, '请选择要扫描的目录');
-  const resolved = path.resolve(String(rootPath));
+  const resolved = normalizePath(rootPath);
   if (!fs.existsSync(resolved)) throw httpError(400, '目录不存在');
   const started = Date.now();
   const candidates = await scanDirectory(resolved, Number(maxDepth) || 3, 300);
