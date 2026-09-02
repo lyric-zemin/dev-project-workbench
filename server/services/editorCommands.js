@@ -227,11 +227,11 @@ export function revealInExplorer(targetPath) {
 export function openInTerminal(targetPath) {
   const platform = process.platform;
   if (platform === 'win32') {
-    const child = spawn('cmd', ['/c', 'start', 'cmd', '/k', 'cd /d', targetPath], {
+    const child = spawn('powershell', ['-NoExit', '-Command', `Set-Location -Path '${targetPath.replace(/'/g, "''")}'`], {
       detached: true,
       stdio: 'ignore',
       shell: true,
-      windowsHide: true,
+      windowsHide: false,
     });
     child.on('error', (err) => console.error('[terminal] 打开失败:', err.message));
     child.unref();

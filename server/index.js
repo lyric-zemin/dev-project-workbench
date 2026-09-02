@@ -67,6 +67,19 @@ app.post('/api/workspaces', (req, res) => {
   res.status(201).json(ws);
 });
 
+app.put('/api/workspaces/reorder', (req, res) => {
+  const db = store.load();
+  const ids = (req.body?.ids || []).filter(Boolean);
+  if (!ids.length) throw httpError(400, '排序数据为空');
+  ids.forEach((id, index) => {
+    const ws = db.workspaces.find((w) => w.id === id);
+    if (ws) ws.order = index;
+  });
+  db.workspaces.sort((a, b) => a.order - b.order);
+  store.persist();
+  res.json({ ok: true });
+});
+
 app.put('/api/workspaces/:id', (req, res) => {
   const db = store.load();
   const ws = db.workspaces.find((w) => w.id === req.params.id);
@@ -106,19 +119,6 @@ app.delete('/api/workspaces/:id', (req, res) => {
   });
   store.persist();
   res.json({ ok: true, affected: affected.length });
-});
-
-app.put('/api/workspaces/reorder', (req, res) => {
-  const db = store.load();
-  const ids = (req.body?.ids || []).filter(Boolean);
-  if (!ids.length) throw httpError(400, '排序数据为空');
-  ids.forEach((id, index) => {
-    const ws = db.workspaces.find((w) => w.id === id);
-    if (ws) ws.order = index;
-  });
-  db.workspaces.sort((a, b) => a.order - b.order);
-  store.persist();
-  res.json({ ok: true });
 });
 
 /* ------------------------------------------------------------------ */
@@ -184,6 +184,17 @@ app.post('/api/projects', asyncHandler(async (req, res) => {
   res.status(201).json(project);
 }));
 
+app.put('/api/projects/reorder', (req, res) => {
+  const db = store.load();
+  const { workspaceId, ids = [] } = req.body || {};
+  ids.forEach((id, index) => {
+    const p = db.projects.find((x) => x.id === id);
+    if (p && (!workspaceId || p.workspaceId === workspaceId)) p.order = index;
+  });
+  store.persist();
+  res.json({ ok: true });
+});
+
 app.put('/api/projects/:id', asyncHandler(async (req, res) => {
   const db = store.load();
   const project = db.projects.find((p) => p.id === req.params.id);
@@ -223,17 +234,6 @@ app.delete('/api/projects/:id', (req, res) => {
   const before = db.projects.length;
   db.projects = db.projects.filter((p) => p.id !== req.params.id);
   if (db.projects.length === before) throw httpError(404, '项目不存在');
-  store.persist();
-  res.json({ ok: true });
-});
-
-app.put('/api/projects/reorder', (req, res) => {
-  const db = store.load();
-  const { workspaceId, ids = [] } = req.body || {};
-  ids.forEach((id, index) => {
-    const p = db.projects.find((x) => x.id === id);
-    if (p && (!workspaceId || p.workspaceId === workspaceId)) p.order = index;
-  });
   store.persist();
   res.json({ ok: true });
 });

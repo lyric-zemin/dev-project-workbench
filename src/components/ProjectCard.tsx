@@ -86,6 +86,12 @@ export default function ProjectCard({
         <span className="truncate">{project.path}</span>
       </p>
 
+      {project.description && (
+        <p className="mt-1.5 line-clamp-2 text-xs leading-relaxed text-slate-600 dark:text-slate-300" title={project.description}>
+          {project.description}
+        </p>
+      )}
+
       {project.exists === false && (
         <p className="mt-2 flex items-center gap-1 text-[11px] text-amber-600 dark:text-amber-400">
           <AlertTriangle className="h-3 w-3" />
@@ -104,7 +110,9 @@ export default function ProjectCard({
         <span>更新 {formatRelativeTime(project.lastUpdated)}</span>
       </div>
 
-      <div className="mt-4 flex items-center gap-2 border-t border-slate-100 pt-3 dark:border-slate-800">
+      <div className="mt-4 min-h-0 flex-1" />
+
+      <div className="flex items-center gap-2 border-t border-slate-100 pt-3 dark:border-slate-800">
         <button
           type="button"
           disabled={busy.opening}

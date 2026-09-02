@@ -1,0 +1,5 @@
+修复排序路由 404 及若干界面/终端优化
+
+- 将 /api/projects/reorder 与 /api/workspaces/reorder 路由移至各自的 :id 路由之前，避免被精确路由拦截导致拖动排序返回 404
+- 终端打开功能在 Windows 下改为启动 PowerShell 窗口
+- 项目卡片展示项目描述，并通过弹性占位使底部操作按钮始终对齐、保留上间距
