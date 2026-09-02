@@ -53,6 +53,9 @@ function startBackend() {
 }
 
 function createWindow() {
+  // 应用图标：开发/打包下均位于 <root>/assets（随 files 打包进 asar）
+  const iconPath = path.join(projectRoot, 'assets', 'icon.png');
+
   mainWindow = new BrowserWindow({
     width: 1280,
     height: 800,
@@ -60,6 +63,7 @@ function createWindow() {
     minHeight: 640,
     show: false,
     backgroundColor: '#0f172a',
+    icon: iconPath,
     webPreferences: {
       contextIsolation: true,
       nodeIntegration: false,

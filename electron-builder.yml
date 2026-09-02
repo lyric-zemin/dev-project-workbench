@@ -10,11 +10,12 @@ directories:
   # 应用根目录（构建上下文），electron/main.js 与 server/ 都在此
   buildResources: .
 
-# 要打进 asar 的文件（入口 + 后端 + 已构建的前端）
+# 要打进 asar 的文件（入口 + 后端 + 已构建的前端 + 应用图标）
 files:
   - electron/**/*
   - server/**/*
   - dist/**/*
+  - assets/**/*
   - package.json
 
 # asar 内 server/ 需要被动态 import，保留即可（默认 asar 支持 ES module）
@@ -36,8 +37,8 @@ win:
     # 单文件便携版（免安装，解压即用）
     - target: portable
       arch: x64
-  # 应用图标（可选，放入 buildResources 后取消注释）
-  # icon: build/icon.ico
+  # 应用图标（Windows 可执行文件/安装包图标）
+  icon: assets/icon.ico
 
 nsis:
   oneClick: false
