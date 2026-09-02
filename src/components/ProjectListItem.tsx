@@ -1,5 +1,5 @@
 import clsx from 'clsx';
-import { AlertTriangle, Code2, FolderOpen, Hammer, Loader2, MoreHorizontal } from 'lucide-react';
+import { AlertTriangle, Code2, FolderOpen, Hammer, Loader2, MoreHorizontal, Pencil } from 'lucide-react';
 import TechStackBadge from './TechStackBadge';
 import { STATUS_META, colorClasses, formatBytes, formatDateTime, formatRelativeTime } from '@/lib/format';
 import { getIcon } from '@/lib/icons';
@@ -121,6 +121,17 @@ export default function ProjectListItem({
           className="inline-flex items-center rounded-lg border border-slate-200 p-1 text-slate-600 transition hover:bg-slate-50 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800"
         >
           <Hammer className="h-3.5 w-3.5" />
+        </button>
+        <button
+          type="button"
+          onClick={(e) => {
+            e.stopPropagation();
+            actions.edit(project);
+          }}
+          title="编辑项目信息"
+          className="inline-flex items-center rounded-lg border border-slate-200 p-1 text-slate-600 transition hover:bg-slate-50 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800"
+        >
+          <Pencil className="h-3.5 w-3.5" />
         </button>
         <button
           type="button"

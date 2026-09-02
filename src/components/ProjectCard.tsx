@@ -1,5 +1,5 @@
 import clsx from 'clsx';
-import { AlertTriangle, Code2, FolderOpen, Hammer, Loader2, MoreHorizontal } from 'lucide-react';
+import { AlertTriangle, Code2, FolderOpen, Hammer, Loader2, MoreHorizontal, Pencil } from 'lucide-react';
 import { useState } from 'react';
 import TechStackBadge from './TechStackBadge';
 import { STATUS_META, colorClasses, formatBytes, formatRelativeTime } from '@/lib/format';
@@ -136,6 +136,18 @@ export default function ProjectCard({
         >
           <Hammer className="h-3.5 w-3.5" />
           构建
+        </button>
+        <button
+          type="button"
+          onClick={(e) => {
+            e.stopPropagation();
+            actions.edit(project);
+          }}
+          title="编辑项目信息"
+          className="inline-flex items-center justify-center gap-1.5 rounded-lg border border-slate-200 px-2.5 py-1.5 text-xs font-medium text-slate-600 transition hover:border-slate-300 hover:bg-slate-50 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800"
+        >
+          <Pencil className="h-3.5 w-3.5" />
+          编辑
         </button>
         <button
           type="button"
