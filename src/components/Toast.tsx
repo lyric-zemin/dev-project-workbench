@@ -47,6 +47,18 @@ export default function ToastContainer() {
           >
             <Icon className={`mt-0.5 h-4 w-4 shrink-0 ${style.iconColor}`} />
             <span className="flex-1 break-words leading-5">{t.message}</span>
+            {t.action && (
+              <button
+                type="button"
+                onClick={() => {
+                  t.action?.onClick();
+                  dismiss(t.id);
+                }}
+                className="shrink-0 rounded-md px-2 py-0.5 text-xs font-semibold text-indigo-600 transition hover:bg-indigo-50 dark:text-indigo-400 dark:hover:bg-indigo-500/10"
+              >
+                {t.action.label}
+              </button>
+            )}
             <button
               type="button"
               onClick={() => dismiss(t.id)}

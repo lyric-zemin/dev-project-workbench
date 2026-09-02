@@ -2,11 +2,11 @@ import { useMemo } from 'react';
 import {
   Code2,
   Copy,
+  FolderInput,
   FolderOpen,
   Hammer,
   Info,
   Pencil,
-  PlayCircle,
   RefreshCw,
   TerminalSquare,
   Trash2,
@@ -113,15 +113,25 @@ export function useProjectActions({ onBuild, onRequestDelete }: Handlers): Proje
           {
             key: 'move',
             label: '移动到工作区',
-            icon: <PlayCircle className="h-4 w-4" />,
+            icon: <FolderInput className="h-4 w-4" />,
             disabled: workspaces.length < 2,
-            onClick: () => {
-              const next = workspaces.find((w) => w.id !== project.workspaceId);
-              if (next) {
-                void useProjectStore.getState().update(project.id, { workspaceId: next.id });
-                toast.info(`已移动到「${next.name}」`);
-              }
-            },
+            submenu: workspaces
+              .filter((w) => w.id !== project.workspaceId)
+              .map((w) => ({
+                key: `move-${w.id}`,
+                label: w.name,
+                icon: <FolderInput className="h-4 w-4" />,
+                onClick: () => {
+                  const prev = useProjectStore.getState().projects.find((p) => p.id === project.id);
+                  const prevWorkspaceId = prev?.workspaceId ?? project.workspaceId;
+                  void useProjectStore.getState().update(project.id, { workspaceId: w.id });
+                  toast.info(`已移动到「${w.name}」`, {
+                    label: '撤销',
+                    onClick: () =>
+                      void useProjectStore.getState().update(project.id, { workspaceId: prevWorkspaceId }),
+                  });
+                },
+              })),
           },
           { key: 'd2', label: '', divider: true },
           {

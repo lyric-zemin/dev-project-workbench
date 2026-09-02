@@ -1,4 +1,3 @@
-import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Menu, Monitor, Moon, Plus, ScanLine, Settings, Sun } from 'lucide-react';
 import clsx from 'clsx';
@@ -21,22 +20,13 @@ export default function TopBar({ onToggleSidebar, onNewProject, onScan }: TopBar
   const navigate = useNavigate();
   const theme = useSettingsStore((s) => s.settings.theme);
   const patch = useSettingsStore((s) => s.patch);
-  const [systemDark, setSystemDark] = useState(false);
-
-  useEffect(() => {
-    const mq = window.matchMedia('(prefers-color-scheme: dark)');
-    const sync = () => setSystemDark(mq.matches);
-    sync();
-    mq.addEventListener('change', sync);
-    return () => mq.removeEventListener('change', sync);
-  }, []);
 
   const cycleTheme = () => {
     const index = THEME_OPTIONS.findIndex((o) => o.value === theme);
     patch({ theme: THEME_OPTIONS[(index + 1) % THEME_OPTIONS.length].value });
   };
 
-  const ThemeIcon = theme === 'system' ? (systemDark ? Moon : Sun) : THEME_OPTIONS.find((o) => o.value === theme)!.icon;
+  const ThemeIcon = THEME_OPTIONS.find((o) => o.value === theme)!.icon;
 
   return (
     <header className="flex h-14 shrink-0 items-center gap-3 border-b border-slate-200 bg-white/80 px-4 backdrop-blur dark:border-slate-800 dark:bg-slate-900/80">
