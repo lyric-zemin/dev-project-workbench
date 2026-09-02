@@ -3,6 +3,7 @@
   "private": true,
   "version": "1.0.0",
   "type": "module",
+  "main": "electron/main.js",
   "description": "开发者项目管理工作台 - 统一管理开发项目、可视化技术栈、一键打开与构建",
   "scripts": {
     "dev": "concurrently -n API,WEB -c cyan,magenta \"npm:dev:api\" \"npm:dev:web\"",
@@ -11,7 +12,11 @@
     "build": "vite build",
     "start": "cross-env NODE_ENV=production node server/index.js",
     "serve": "npm run build && npm run start",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "electron:dev": "npm run build && electron .",
+    "dist:win": "npm run build && electron-builder --win",
+    "dist:win:nsis": "npm run build && electron-builder --win --config electron-builder.yml --publish=never --c.win.target=nsis",
+    "dist:win:portable": "npm run build && electron-builder --win --config electron-builder.yml --publish=never --c.win.target=portable"
   },
   "dependencies": {
     "clsx": "^2.1.1",
@@ -29,6 +34,8 @@
     "@vitejs/plugin-react": "^4.3.4",
     "concurrently": "^9.1.2",
     "cross-env": "^7.0.3",
+    "electron": "^33.2.0",
+    "electron-builder": "^25.1.8",
     "tailwindcss": "^4.0.0",
     "typescript": "^5.7.3",
     "vite": "^6.0.7"

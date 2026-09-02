@@ -1,6 +1,8 @@
 node_modules/
 dist/
 server/data/
+release/
+build/
 *.log
 .DS_Store
 .vscode/

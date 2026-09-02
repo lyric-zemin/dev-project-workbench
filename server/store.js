@@ -8,7 +8,12 @@ import { fileURLToPath } from 'node:url';
 import { DEFAULT_EDITORS } from './services/editorCommands.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-export const DATA_DIR = path.join(__dirname, 'data');
+// Electron 打包后 server/ 处于只读的 resources 目录，数据需写入用户可写目录。
+// 通过环境变量 DWB_DATA_DIR 注入（electron/main.js 会使用 app.getPath('userData')）。
+export const DATA_DIR =
+  process.env.DWB_DATA_DIR && process.env.DWB_DATA_DIR.trim()
+    ? process.env.DWB_DATA_DIR
+    : path.join(__dirname, 'data');
 export const DB_FILE = path.join(DATA_DIR, 'store.json');
 
 export const nowISO = () => new Date().toISOString();

@@ -94,3 +94,37 @@ src/
 - 「移除项目」只删除工作台中的记录，不会删除磁盘文件
 - 构建命令在项目根目录执行，已自动将 `node_modules/.bin` 注入 `PATH`；Windows 下通过 shell 解析 `npm.cmd` / `yarn.cmd` / `pnpm.cmd`
 - 编辑器检测依赖 `where` / `command -v`，未检测到的编辑器仍可选择使用（若已加入 PATH）
+
+## 打包为可分发的可执行文件（Electron）
+
+本应用依赖 Node 的 `child_process` 等能力，无法通过浏览器直接分发。使用 Electron 将前端（`dist`）与本地 Express 后端一起打包成桌面应用，用户无需安装 Node 即可使用。
+
+### 原理
+- Electron 主进程（`electron/main.js`）本身就是 Node 运行时，直接 `import` 并启动 `server/index.js` 拉起后端，监听 `127.0.0.1:5177`。
+- 主窗口加载 `http://127.0.0.1:5177`（Express 托管的 `dist` 前端）。
+- 数据目录在打包后写入 `app.getPath('userData')/data`，通过环境变量 `DWB_DATA_DIR` 注入，避免写入只读的 asar 资源目录。
+
+### 命令
+```bash
+npm install                # 安装依赖（含 electron / electron-builder）
+
+# 本地调试 Electron（先构建前端再起桌面窗口）
+npm run electron:dev
+
+# 打包 Windows 可执行文件（先 vite build 再 electron-builder）
+npm run dist:win           # 同时产出 NSIS 安装版与便携版
+npm run dist:win:nsis      # 仅 NSIS 安装版（推荐分发）
+npm run dist:win:portable  # 仅单文件便携版（解压即用）
+```
+
+产物位于 `release/`：
+| 文件 | 说明 |
+| --- | --- |
+| `DevProjectWorkbench-<version>-Setup.exe` | NSIS 安装版，可自定义安装路径、创建桌面快捷方式 |
+| `DevProjectWorkbench-<version>-portable.exe` | 便携版，免安装，双击即跑 |
+
+### 注意事项
+- 首次 `npm install electron` 需下载 Electron 二进制，若网络受限请配置镜像（如 `ELECTRON_MIRROR`）。
+- 打包后体积约 80–150MB，属 Electron 正常水平。
+- 如需自定义应用图标，将 `icon.ico` 放入 `build/` 并在 `electron-builder.yml` 取消 `win.icon` 注释。
+- `package.json` 已设置 `"main": "electron/main.js"`；`electron-builder.yml` 控制打包细节（输出目录 `release/`、目标架构 x64 等）。

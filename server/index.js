@@ -17,7 +17,11 @@ import { startBuild, stopBuild, getJob, serializeJob, listJobs, subscribeJob } f
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const PORT = Number(process.env.PORT || 5177);
-const DIST_DIR = path.join(__dirname, '..', 'dist');
+// Electron 打包时由 main 进程通过 DWB_DIST_DIR 注入解包后的真实 dist 路径（asar 外），
+// 否则回退到开发模式相对路径（<root>/dist）。
+const DIST_DIR = process.env.DWB_DIST_DIR && process.env.DWB_DIST_DIR.trim()
+  ? process.env.DWB_DIST_DIR
+  : path.join(__dirname, '..', 'dist');
 
 const app = express();
 app.use(express.json({ limit: '10mb' }));
