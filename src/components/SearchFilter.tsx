@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState, type RefObject } from 'react';
 import clsx from 'clsx';
 import { ArrowDownWideNarrow, ArrowUpNarrowWide, Check, ChevronDown, FilterX, LayoutGrid, List, Search, Tag } from 'lucide-react';
 import { STATUS_META } from '@/lib/format';
@@ -19,6 +19,8 @@ interface SearchFilterProps {
   visibleCount: number;
   search: string;
   onSearch: (value: string) => void;
+  /** 供外部（如 Ctrl+F 快捷键）聚焦并选中搜索框内容 */
+  inputRef?: RefObject<HTMLInputElement>;
   statuses: ProjectStatus[];
   onToggleStatus: (status: ProjectStatus) => void;
   techs: string[];
@@ -37,6 +39,7 @@ export default function SearchFilter({
   visibleCount,
   search,
   onSearch,
+  inputRef,
   statuses,
   onToggleStatus,
   techs,
@@ -77,6 +80,7 @@ export default function SearchFilter({
         <div className="relative w-full lg:max-w-sm">
           <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
           <input
+            ref={inputRef}
             value={search}
             onChange={(e) => onSearch(e.target.value)}
             placeholder="搜索项目名称 / 路径 / 技术栈…（Ctrl+F）"

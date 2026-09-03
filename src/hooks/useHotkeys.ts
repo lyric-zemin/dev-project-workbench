@@ -21,15 +21,10 @@ export function useHotkeys({ onSearch, onNew, onSettings }: HotkeyHandlers) {
       if (!mod) return;
       const key = e.key.toLowerCase();
 
+      // Ctrl/Cmd+F 与浏览器「查找」语义一致，即使在输入框内也生效
       if (key === 'f') {
         e.preventDefault();
-        const input = document.getElementById('global-search') as HTMLInputElement | null;
-        if (input) {
-          input.focus();
-          input.select();
-        } else {
-          onSearch?.();
-        }
+        onSearch?.();
         return;
       }
 

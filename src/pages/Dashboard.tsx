@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { FolderPlus, FolderSearch, Plus, SearchX } from 'lucide-react';
 import TopBar from '@/components/TopBar';
@@ -53,6 +53,8 @@ export default function Dashboard() {
 
   const settings = useSettingsStore((s) => s.settings);
 
+  const searchInputRef = useRef<HTMLInputElement>(null);
+
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [workspaceForm, setWorkspaceForm] = useState<{ open: boolean; workspace: Workspace | null }>({
     open: false,
@@ -97,7 +99,12 @@ export default function Dashboard() {
   });
 
   useHotkeys({
-    onSearch: () => document.getElementById('global-search')?.focus(),
+    onSearch: () => {
+      const el = searchInputRef.current;
+      if (!el) return;
+      el.focus();
+      el.select();
+    },
     onNew: () => openForm(null),
     onSettings: () => navigate('/settings'),
   });
@@ -214,12 +221,13 @@ export default function Dashboard() {
         {/* 主区域 */}
         <main className="min-w-0 flex-1 overflow-y-auto">
           <div className="mx-auto max-w-[1600px] px-4 py-5 sm:px-6">
-            <div className="mb-5" id="global-search">
+            <div className="mb-5">
               <SearchFilter
                 projects={projects}
                 visibleCount={visibleProjects.length}
                 search={search}
                 onSearch={setSearch}
+                inputRef={searchInputRef}
                 statuses={statuses}
                 onToggleStatus={toggleStatus}
                 techs={techs}
