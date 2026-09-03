@@ -1,7 +1,7 @@
 {
   "name": "dev-project-workbench",
-  "private": true,
   "version": "1.0.0",
+  "license": "MIT",
   "type": "module",
   "main": "electron/main.js",
   "description": "开发者项目管理工作台 - 统一管理开发项目、可视化技术栈、一键打开与构建",
