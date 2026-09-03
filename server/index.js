@@ -14,9 +14,10 @@ import { detectTechStack, getProjectMeta, getGitInfo } from './services/techStac
 import { getEditors, openWithEditor, revealInExplorer, openInTerminal, clearEditorCache } from './services/editorCommands.js';
 import { scanDirectory, enrichCandidates, browseDirectory, listDrives, normalizePath } from './services/projectScanner.js';
 import { startBuild, stopBuild, getJob, serializeJob, listJobs, subscribeJob } from './services/buildRunner.js';
+import { API_PORT as DEFAULT_API_PORT } from '../shared/ports.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const PORT = Number(process.env.PORT || 5177);
+const PORT = Number(process.env.PORT || DEFAULT_API_PORT);
 // Electron 打包时由 main 进程通过 DWB_DIST_DIR 注入解包后的真实 dist 路径（asar 外），
 // 否则回退到开发模式相对路径（<root>/dist）。
 const DIST_DIR = process.env.DWB_DIST_DIR && process.env.DWB_DIST_DIR.trim()

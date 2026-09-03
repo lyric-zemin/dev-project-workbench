@@ -15,7 +15,8 @@ import {
 } from 'lucide-react';
 import clsx from 'clsx';
 import TechStackBadge from './TechStackBadge';
-import { CATEGORY_META, STATUS_META, colorClasses, formatBytes, formatDateTime, formatRelativeTime } from '@/lib/format';
+import { CATEGORY_META, STATUS_META } from '@/constants/project';
+import { colorClasses, formatBytes, formatDateTime, formatRelativeTime } from '@/lib/format';
 import { getIcon } from '@/lib/icons';
 import { useProjectStore } from '@/stores/projectStore';
 import { useWorkspaceStore } from '@/stores/workspaceStore';

@@ -224,16 +224,20 @@ Available on the settings page (`/settings`), persisted in `server/data/store.js
 ├── server/                     # Local Express backend (native ESM, no build step)
 │   ├── index.js                # All /api routes plus static asset serving
 │   ├── store.js                # Local JSON persistence (debounced writes + atomic replace)
+│   ├── constants.js            # Constants shared inside the backend
 │   └── services/
 │       ├── projectScanner.js   # Recursive directory scanning and project detection
 │       ├── techStackDetect.js  # Tech-stack detection / size stats / Git info
 │       ├── editorCommands.js   # Editor and file-manager launching (cross-platform)
 │       └── buildRunner.js      # Build task execution and log streaming (SSE)
+├── shared/
+│   └── ports.js                # Constants shared across runtimes (backend / Electron / Vite)
 ├── src/
 │   ├── components/             # UI components (Modal / ProjectCard / WorkspaceNav …)
 │   ├── pages/                  # Dashboard / Settings
 │   ├── stores/                 # Zustand stores: project / workspace / settings / toast
 │   ├── hooks/                  # Hotkeys, project actions
+│   ├── constants/              # Frontend constants: theme / sort / status / colors / UI values …
 │   ├── lib/                    # API client, formatting, filtering & sorting, icons
 │   └── types/                  # TypeScript type definitions
 ├── electron/

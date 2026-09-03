@@ -1,20 +1,14 @@
 import { useNavigate } from 'react-router-dom';
-import { Menu, Monitor, Moon, Plus, ScanLine, Settings, Sun } from 'lucide-react';
+import { Menu, Plus, ScanLine, Settings } from 'lucide-react';
 import clsx from 'clsx';
 import { useSettingsStore } from '@/stores/settingsStore';
-import type { ThemeMode } from '@/types';
+import { THEME_OPTIONS } from '@/constants/theme';
 
 interface TopBarProps {
   onToggleSidebar: () => void;
   onNewProject: () => void;
   onScan: () => void;
 }
-
-const THEME_OPTIONS: { value: ThemeMode; icon: typeof Sun; label: string }[] = [
-  { value: 'light', icon: Sun, label: '浅色' },
-  { value: 'dark', icon: Moon, label: '深色' },
-  { value: 'system', icon: Monitor, label: '跟随系统' },
-];
 
 export default function TopBar({ onToggleSidebar, onNewProject, onScan }: TopBarProps) {
   const navigate = useNavigate();

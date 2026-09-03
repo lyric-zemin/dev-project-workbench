@@ -3,7 +3,7 @@ import clsx from 'clsx';
 import { FolderSearch } from 'lucide-react';
 import Modal from './Modal';
 import DirectoryPicker from './DirectoryPicker';
-import { STATUS_META } from '@/lib/format';
+import { STATUS_META } from '@/constants/project';
 import { useProjectStore } from '@/stores/projectStore';
 import { useWorkspaceStore } from '@/stores/workspaceStore';
 import { useSettingsStore } from '@/stores/settingsStore';

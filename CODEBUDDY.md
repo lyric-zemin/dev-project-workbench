@@ -50,9 +50,27 @@ PRD 3.3 要求用 Node.js `child_process` 打开编辑器与执行打包，浏�
 - `Modal` 用 portal 挂到 body，自带 Esc 关闭与 body 滚动锁；所有弹窗都基于它。
 - `ProjectCard`（网格）与 `ProjectListItem`（列表）实现同一组 props（`components/projectShared.ts` 的 `ProjectViewProps`），新增展示字段时两边都要改。
 - 项目操作全部收敛在 `hooks/useProjectActions.tsx`（**注意是 `.tsx`，里面有 JSX**），它返回 `open/build/reveal/...` 以及 `menuItems(project)`——右键菜单和详情页的"其他操作"共用这一份菜单定义，加操作只需改这里。
-- `lib/format.ts` 集中了 `STATUS_META` / `CATEGORY_META` / `WORKSPACE_COLORS` 三张样式表，状态和技术栈的颜色改这里。
+- 状态与技术栈的样式表（`STATUS_META` / `CATEGORY_META`）在 `constants/project.ts`，工作区配色（`WORKSPACE_COLORS`）在 `constants/workspace.ts`，改颜色改这里；`lib/format.ts` 只保留格式化函数与 `colorClasses()` 取色函数。
 
 **构建日志的取流方式**：`BuildLogModal` 同时用 SSE 和 1.2 秒轮询 `GET /api/builds/:id`（SSE 的 `log` 事件只推增量文本，服务端 `job.logs` 才是权威来源，所以用轮询补齐）。任务状态变化通过 `onStatusChange` 回调冒泡给 `Dashboard`，`Dashboard` 据此挂载/卸载"构建中离开页面"的 `beforeunload` 拦截。
+
+### 常量存放约定
+
+同一仓库里有三套运行时（浏览器 / Node 后端 / Electron 主进程），常量**按运行时边界归位**，不要凭感觉乱放：
+
+| 位置 | 适用条件 | 现有内容 |
+| --- | --- | --- |
+| `src/constants/*.ts` | 仅前端消费、需要类型约束 | `theme.ts`（主题选项，数组顺序 = 切换循环顺序）、`sort.ts`（排序选项，**短标签**，由渲染处拼前缀）、`project.ts`（状态/技术栈分类样式表）、`workspace.ts`（工作区配色）、`ui.ts`（网格 5 / 列表 4 的技术栈展示上限）、`storage.ts`（localStorage 键名）、`settings.ts`（前端默认设置） |
+| `shared/*.js` | 被 ≥2 个 Node 侧入口消费（后端 / Electron / `vite.config.ts`） | `ports.js`（`API_PORT` / `WEB_PORT`） |
+| `server/constants.js` | 仅后端内部跨 service 复用 | 扫描与统计各自的忽略目录集合 |
+
+要点：
+
+- **不要建桶文件**（`src/constants/index.ts`）：各常量域互不相关（主题域还引入 lucide 图标），桶文件会让只用到排序常量的模块被牵连引入图标。按域深路径导入 `@/constants/sort`。
+- **`shared/` 是纯 ESM JavaScript**，不在 `tsconfig` 的 `include` 内、不参与类型检查，前端不要 import 它。
+- **改动 `shared/` 的文件清单时，必须同步 `electron-builder.yml` 的 `files` 与 `asarUnpack`**，缺 `asarUnpack` 会导致打包版启动时找不到模块而直接崩溃——解包后的 `server/index.js` 是以 `../shared/` 相对路径引包的。
+- **三处无法直接共享、保留副本并加了互链注释**：`server/store.js` 的 `DEFAULT_SETTINGS`（对应 `src/constants/settings.ts`）、`index.html` 内联脚本里的 `'dwb.theme'`（对应 `constants/storage.ts`，内联脚本不是 module 无法 import）。改任意一侧都要同步另一侧。
+- **只在一处使用的常量不搬迁**，就近定义即可（如 `Modal.tsx` 的 `SIZES`、`ContextMenu.tsx` 的菜单尺寸、后端各 service 内的上限值）。
 
 ### 配置注意事项
 

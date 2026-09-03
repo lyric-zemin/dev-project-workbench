@@ -8,6 +8,9 @@
       // 避免首屏主题闪烁
       (function () {
         try {
+          // 此处必须保留字符串字面量：本段是普通 <script>（非 module），无法 import
+          // 模块常量。键名的唯一来源见 src/constants/storage.ts 的
+          // STORAGE_KEYS.THEME，改动那里时必须同步改动这里，否则首屏会闪一下主题。
           var raw = localStorage.getItem('dwb.theme') || 'system';
           var isDark =
             raw === 'dark' ||

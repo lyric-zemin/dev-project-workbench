@@ -14,17 +14,21 @@ directories:
 files:
   - electron/**/*
   - server/**/*
+  - shared/**/*
   - dist/**/*
   - assets/**/*
   - package.json
 
 # asar 内 server/ 需要被动态 import，保留即可（默认 asar 支持 ES module）
 asar: true
-# 把前端静态资源与后端代码解包到 asar 外（resources/app.asar.unpacked/），
-# 以真实文件系统存在，确保 Express 静态托管与 ESM 动态 import 稳定可靠
+# 把前端静态资源、后端代码与 shared/ 常量解包到 asar 外（resources/app.asar.unpacked/），
+# 以真实文件系统存在，确保 Express 静态托管与 ESM 动态 import 稳定可靠。
+# ⚠️ shared/ 必须解包：解包后的 server/index.js 以 ../shared/ports.js 相对路径引包，
+# 若 shared/ 只留在 asar 内，打包版启动时会因找不到模块而直接崩溃。
 asarUnpack:
   - dist/**
   - server/**
+  - shared/**
 
 # 额外不打包进 asar、但需随附的资源
 extraResources: []

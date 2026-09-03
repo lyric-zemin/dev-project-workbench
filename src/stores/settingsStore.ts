@@ -1,20 +1,9 @@
 import { create } from 'zustand';
+import { DEFAULT_SETTINGS } from '@/constants/settings';
+import { STORAGE_KEYS } from '@/constants/storage';
 import { api } from '@/lib/api';
 import { toast } from './toastStore';
 import type { AppSettings, EditorConfig } from '@/types';
-
-const THEME_KEY = 'dwb.theme';
-
-export const DEFAULT_SETTINGS: AppSettings = {
-  theme: 'system',
-  defaultEditorId: 'vscode',
-  buildCommand: 'npm run build',
-  viewMode: 'grid',
-  sortBy: 'custom',
-  sortDir: 'asc',
-  scanMaxDepth: 3,
-  confirmBeforeBuild: true,
-};
 
 function applyTheme(mode: AppSettings['theme']) {
   const isDark =
@@ -22,7 +11,7 @@ function applyTheme(mode: AppSettings['theme']) {
     (mode === 'system' && window.matchMedia?.('(prefers-color-scheme: dark)').matches);
   document.documentElement.classList.toggle('dark', isDark);
   try {
-    localStorage.setItem(THEME_KEY, mode);
+    localStorage.setItem(STORAGE_KEYS.THEME, mode);
   } catch {
     /* 忽略隐私模式下的写入失败 */
   }

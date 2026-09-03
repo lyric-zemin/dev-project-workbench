@@ -224,16 +224,20 @@ npm run dist:win:portable    # 仅单文件便携版（免安装）
 ├── server/                     # 本地 Express 后端（原生 ESM，无构建步骤）
 │   ├── index.js                # 全部 /api 路由与静态资源托管
 │   ├── store.js                # 本地 JSON 持久化（防抖写盘 + 原子替换）
+│   ├── constants.js            # 后端内部共用常量
 │   └── services/
 │       ├── projectScanner.js   # 目录递归扫描与项目识别
 │       ├── techStackDetect.js  # 技术栈检测 / 体积统计 / Git 信息
 │       ├── editorCommands.js   # 编辑器与文件管理器唤起（跨平台）
 │       └── buildRunner.js      # 构建任务执行与日志推送（SSE）
+├── shared/
+│   └── ports.js                # 跨运行时共享常量（后端 / Electron / Vite 共用）
 ├── src/
 │   ├── components/             # UI 组件（Modal / ProjectCard / WorkspaceNav …）
 │   ├── pages/                  # Dashboard / Settings
 │   ├── stores/                 # Zustand 状态：project / workspace / settings / toast
 │   ├── hooks/                  # 快捷键、项目操作
+│   ├── constants/              # 前端常量：主题 / 排序 / 状态 / 配色 / UI 数值 …
 │   ├── lib/                    # API 客户端、格式化、筛选排序、图标
 │   └── types/                  # TypeScript 类型定义
 ├── electron/

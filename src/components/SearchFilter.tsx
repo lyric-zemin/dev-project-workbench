@@ -1,18 +1,10 @@
 import { useEffect, useMemo, useRef, useState, type RefObject } from 'react';
 import clsx from 'clsx';
 import { ArrowDownWideNarrow, ArrowUpNarrowWide, Check, ChevronDown, FilterX, LayoutGrid, List, Search, Tag } from 'lucide-react';
-import { STATUS_META } from '@/lib/format';
+import { SORT_OPTIONS } from '@/constants/sort';
+import { STATUS_META } from '@/constants/project';
 import { collectTechNames } from '@/lib/filters';
 import type { Project, ProjectStatus, SortBy, ViewMode } from '@/types';
-
-const SORT_OPTIONS: { value: SortBy; label: string }[] = [
-  { value: 'custom', label: '自定义（可拖拽）' },
-  { value: 'name', label: '名称' },
-  { value: 'pinyin', label: '名称拼音' },
-  { value: 'lastUpdated', label: '最后更新时间' },
-  { value: 'createdAt', label: '创建时间' },
-  { value: 'size', label: '项目体积' },
-];
 
 interface SearchFilterProps {
   projects: Project[];

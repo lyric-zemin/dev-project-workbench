@@ -2,8 +2,7 @@ import { fileURLToPath, URL } from 'node:url';
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import tailwindcss from '@tailwindcss/vite';
-
-const API_PORT = 5177;
+import { API_PORT, WEB_PORT } from './shared/ports.js';
 
 export default defineConfig({
   plugins: [react(), tailwindcss()],
@@ -13,7 +12,7 @@ export default defineConfig({
     },
   },
   server: {
-    port: 5173,
+    port: WEB_PORT,
     proxy: {
       '/api': {
         target: `http://127.0.0.1:${API_PORT}`,

@@ -12,10 +12,11 @@ import { app, BrowserWindow, shell, Menu } from 'electron';
 import path from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import fs from 'node:fs';
+import { API_PORT as DEFAULT_API_PORT } from '../shared/ports.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const isPackaged = app.isPackaged;
-const API_PORT = Number(process.env.PORT || 5177);
+const API_PORT = Number(process.env.PORT || DEFAULT_API_PORT);
 
 // 文件位置：
 //   开发模式：electron/main.js 位于 <root>/electron，projectRoot = <root>

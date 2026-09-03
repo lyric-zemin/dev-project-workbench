@@ -7,37 +7,21 @@ import {
   Database,
   Download,
   Hammer,
-  Monitor,
-  Moon,
   Plus,
   ScanLine,
   Settings as SettingsIcon,
-  Sun,
   Trash2,
   Upload,
 } from 'lucide-react';
+import { SORT_OPTIONS } from '@/constants/sort';
+import { THEME_OPTIONS } from '@/constants/theme';
 import { useSettingsStore } from '@/stores/settingsStore';
 import { useProjectStore } from '@/stores/projectStore';
 import { useWorkspaceStore } from '@/stores/workspaceStore';
 import { toast } from '@/stores/toastStore';
 import { api } from '@/lib/api';
 import { getIcon } from '@/lib/icons';
-import type { SortBy, ThemeMode, ViewMode } from '@/types';
-
-const THEMES: { value: ThemeMode; label: string; icon: typeof Sun }[] = [
-  { value: 'light', label: '浅色', icon: Sun },
-  { value: 'dark', label: '深色', icon: Moon },
-  { value: 'system', label: '跟随系统', icon: Monitor },
-];
-
-const SORT_OPTIONS: { value: SortBy; label: string }[] = [
-  { value: 'custom', label: '自定义（可拖拽）' },
-  { value: 'name', label: '按名称' },
-  { value: 'pinyin', label: '按名称拼音' },
-  { value: 'lastUpdated', label: '按最后更新时间' },
-  { value: 'createdAt', label: '按创建时间' },
-  { value: 'size', label: '按项目体积' },
-];
+import type { SortBy, ViewMode } from '@/types';
 
 export default function Settings() {
   const navigate = useNavigate();
@@ -100,7 +84,7 @@ export default function Settings() {
           <Card title="外观" description="主题与默认展示方式">
             <Row label="主题模式">
               <div className="flex gap-1.5">
-                {THEMES.map((t) => {
+                {THEME_OPTIONS.map((t) => {
                   const Icon = t.icon;
                   const active = settings.theme === t.value;
                   return (
@@ -156,7 +140,8 @@ export default function Settings() {
               >
                 {SORT_OPTIONS.map((o) => (
                   <option key={o.value} value={o.value}>
-                    {o.label}
+                    {/* 沿用历史文案：仅「自定义（可拖拽）」不带前缀，其余为「按XX」 */}
+                    {o.value === 'custom' ? o.label : `按${o.label}`}
                   </option>
                 ))}
               </select>

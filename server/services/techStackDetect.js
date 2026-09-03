@@ -5,6 +5,7 @@
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import { execFile } from 'node:child_process';
+import { META_IGNORE_DIRS } from '../constants.js';
 
 /** 依赖名 -> 技术项 */
 const DEP_TECH = {
@@ -149,12 +150,6 @@ const LOCK_FILES = [
   { file: 'npm-shrinkwrap.json', name: 'npm' },
 ];
 
-const IGNORE_DIRS = new Set([
-  'node_modules', '.git', 'dist', 'build', 'out', 'coverage', '.next', '.nuxt',
-  '.output', '.cache', 'target', 'vendor', '__pycache__', '.venv', 'venv',
-  '.idea', '.vscode', '.DS_Store', 'tmp', 'temp', '.turbo', '.svelte-kit',
-]);
-
 const MAX_FILES = 12000;
 const MAX_DEPTH = 6;
 
@@ -215,7 +210,7 @@ export async function getProjectMeta(projectPath) {
       }
       const full = path.join(dir, entry.name);
       if (entry.isDirectory()) {
-        if (IGNORE_DIRS.has(entry.name)) continue;
+        if (META_IGNORE_DIRS.has(entry.name)) continue;
         await walk(full, depth + 1);
       } else if (entry.isFile()) {
         try {
@@ -314,7 +309,7 @@ export async function detectTechStack(projectPath) {
     }
     for (const entry of entries) {
       if (entry.isDirectory()) {
-        if (IGNORE_DIRS.has(entry.name)) continue;
+        if (META_IGNORE_DIRS.has(entry.name)) continue;
         await probe(path.join(dir, entry.name), depth + 1);
       } else if (entry.isFile()) {
         const ext = path.extname(entry.name);

@@ -2,12 +2,12 @@ import clsx from 'clsx';
 import { AlertTriangle, Code2, FolderOpen, Hammer, Loader2, MoreHorizontal, Pencil } from 'lucide-react';
 import { useState } from 'react';
 import TechStackBadge from './TechStackBadge';
-import { STATUS_META, colorClasses, formatBytes, formatRelativeTime } from '@/lib/format';
+import { STATUS_META } from '@/constants/project';
+import { TECH_VISIBLE_IN_GRID } from '@/constants/ui';
+import { colorClasses, formatBytes, formatRelativeTime } from '@/lib/format';
 import { getIcon } from '@/lib/icons';
 import type { ProjectViewProps } from './projectShared';
 import type { Project } from '@/types';
-
-const MAX_TECH = 5;
 
 export default function ProjectCard({
   project,
@@ -23,7 +23,7 @@ export default function ProjectCard({
   const status = STATUS_META[project.status];
   const color = colorClasses(workspace?.color || 'indigo');
   const Icon = getIcon(workspace?.icon);
-  const visibleTech = project.techStack.slice(0, MAX_TECH);
+  const visibleTech = project.techStack.slice(0, TECH_VISIBLE_IN_GRID);
   const restTech = project.techStack.length - visibleTech.length;
 
   const openMenu = (e: React.MouseEvent, project: Project) => {
@@ -70,7 +70,7 @@ export default function ProjectCard({
           {restTech > 0 && (
             <span
               className="rounded-md bg-slate-100 px-1.5 py-0.5 text-[11px] text-slate-500 dark:bg-slate-800 dark:text-slate-400"
-              title={project.techStack.slice(MAX_TECH).map((t) => t.name).join('、')}
+              title={project.techStack.slice(TECH_VISIBLE_IN_GRID).map((t) => t.name).join('、')}
             >
               +{restTech}
             </span>

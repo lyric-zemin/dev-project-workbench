@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import clsx from 'clsx';
 import Modal from './Modal';
-import { WORKSPACE_COLORS } from '@/lib/format';
+import { WORKSPACE_COLORS } from '@/constants/workspace';
 import { ICON_KEYS, getIcon } from '@/lib/icons';
 import { useWorkspaceStore } from '@/stores/workspaceStore';
 import type { Workspace } from '@/types';

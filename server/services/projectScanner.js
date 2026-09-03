@@ -5,12 +5,7 @@ import fs from 'node:fs/promises';
 import fsSync from 'node:fs';
 import path from 'node:path';
 import { detectTechStack, getProjectMeta } from './techStackDetect.js';
-
-const IGNORE_DIRS = new Set([
-  'node_modules', '.git', 'dist', 'build', 'out', 'coverage', '.next', '.nuxt',
-  '.output', '.cache', 'target', 'vendor', '__pycache__', '.venv', 'venv',
-  '.idea', '.vscode', 'Library', '$RECYCLE.BIN', 'System Volume Information',
-]);
+import { SCAN_IGNORE_DIRS } from '../constants.js';
 
 /** 判定为项目的标志性文件 */
 const PROJECT_MARKERS = [
@@ -58,7 +53,7 @@ export async function scanDirectory(rootPath, maxDepth = 3, maxResults = 200) {
 
     for (const entry of entries) {
       if (!entry.isDirectory()) continue;
-      if (IGNORE_DIRS.has(entry.name) || entry.name.startsWith('.')) continue;
+      if (SCAN_IGNORE_DIRS.has(entry.name) || entry.name.startsWith('.')) continue;
       await walk(path.join(dir, entry.name), depth + 1);
     }
   };
@@ -110,7 +105,7 @@ export async function browseDirectory(targetPath) {
   try {
     const raw = await fs.readdir(resolved, { withFileTypes: true });
     entries = raw
-      .filter((e) => e.isDirectory() && !IGNORE_DIRS.has(e.name) && !(e.name.startsWith('.') && e.name !== '.git'))
+      .filter((e) => e.isDirectory() && !SCAN_IGNORE_DIRS.has(e.name) && !(e.name.startsWith('.') && e.name !== '.git'))
       .map((e) => ({ name: e.name, path: path.join(resolved, e.name), isDir: true }))
       .sort((a, b) => a.name.localeCompare(b.name));
   } catch (err) {

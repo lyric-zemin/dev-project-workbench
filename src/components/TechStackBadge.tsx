@@ -1,5 +1,5 @@
 import clsx from 'clsx';
-import { CATEGORY_META } from '@/lib/format';
+import { CATEGORY_META } from '@/constants/project';
 import type { TechStack } from '@/types';
 
 interface TechStackBadgeProps {

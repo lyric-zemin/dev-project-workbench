@@ -1,12 +1,12 @@
 import clsx from 'clsx';
 import { AlertTriangle, Code2, FolderOpen, Hammer, Loader2, MoreHorizontal, Pencil } from 'lucide-react';
 import TechStackBadge from './TechStackBadge';
-import { STATUS_META, colorClasses, formatBytes, formatDateTime, formatRelativeTime } from '@/lib/format';
+import { STATUS_META } from '@/constants/project';
+import { TECH_VISIBLE_IN_LIST } from '@/constants/ui';
+import { colorClasses, formatBytes, formatDateTime, formatRelativeTime } from '@/lib/format';
 import { getIcon } from '@/lib/icons';
 import type { ProjectViewProps } from './projectShared';
 import type { Project } from '@/types';
-
-const MAX_TECH = 4;
 
 export default function ProjectListItem({
   project,
@@ -21,7 +21,7 @@ export default function ProjectListItem({
   const status = STATUS_META[project.status];
   const color = colorClasses(workspace?.color || 'indigo');
   const Icon = getIcon(workspace?.icon);
-  const visibleTech = project.techStack.slice(0, MAX_TECH);
+  const visibleTech = project.techStack.slice(0, TECH_VISIBLE_IN_LIST);
   const restTech = project.techStack.length - visibleTech.length;
 
   return (
