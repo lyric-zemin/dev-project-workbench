@@ -1,7 +1,7 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import clsx from 'clsx';
-import { GripVertical, Layers, Pencil, Plus, Settings, Trash2 } from 'lucide-react';
+import { GripVertical, Layers, Loader2, Pencil, Plus, RefreshCw, Settings, Trash2 } from 'lucide-react';
 import { useWorkspaceStore } from '@/stores/workspaceStore';
 import { useProjectStore } from '@/stores/projectStore';
 import { colorClasses } from '@/lib/format';
@@ -23,11 +23,29 @@ export default function WorkspaceNav({ onCreate, onEdit, onDelete, onNavigate }:
   const reorder = useWorkspaceStore((s) => s.reorder);
   const projects = useProjectStore((s) => s.projects);
   const clearFilters = useProjectStore((s) => s.clearFilters);
+  const refreshAll = useProjectStore((s) => s.refreshAll);
 
   const [dragId, setDragId] = useState<string | null>(null);
   const [overId, setOverId] = useState<string | null>(null);
+  const [refreshingWsId, setRefreshingWsId] = useState<string | null>(null);
 
   const total = projects.length;
+
+  // 实时派生各工作区项目数，不再依赖 bootstrap 时的快照
+  const countByWs = useMemo(() => {
+    const map = new Map<string, number>();
+    for (const p of projects) map.set(p.workspaceId, (map.get(p.workspaceId) ?? 0) + 1);
+    return map;
+  }, [projects]);
+
+  const handleRefreshWs = async (wsId: string) => {
+    setRefreshingWsId(wsId);
+    try {
+      await refreshAll(wsId, { silent: false });
+    } finally {
+      setRefreshingWsId((cur) => (cur === wsId ? null : cur));
+    }
+  };
 
   const handleDrop = (targetId: string) => {
     if (!dragId || dragId === targetId) return;
@@ -98,7 +116,7 @@ export default function WorkspaceNav({ onCreate, onEdit, onDelete, onNavigate }:
                   setOverId(null);
                 }}
                 className={clsx(
-                  'group flex items-center gap-1.5 rounded-xl pr-1.5 transition',
+                  'group relative flex items-center rounded-xl transition',
                   isActive
                     ? 'bg-white shadow-sm ring-1 ring-slate-200 dark:bg-slate-800 dark:ring-slate-700'
                     : 'hover:bg-white/70 dark:hover:bg-slate-800/60',
@@ -109,7 +127,7 @@ export default function WorkspaceNav({ onCreate, onEdit, onDelete, onNavigate }:
                 <button
                   type="button"
                   onClick={() => select(ws.id)}
-                  className="flex min-w-0 flex-1 items-center gap-2.5 py-2 pl-2.5 text-left"
+                  className="flex min-w-0 flex-1 items-center gap-2.5 py-2 pl-2.5 pr-2 text-left"
                 >
                   <GripVertical className="h-3.5 w-3.5 shrink-0 cursor-grab text-slate-300 opacity-0 transition group-hover:opacity-100 dark:text-slate-600" />
                   <span className={clsx('h-2 w-2 shrink-0 rounded-full', color.dot)} />
@@ -123,10 +141,25 @@ export default function WorkspaceNav({ onCreate, onEdit, onDelete, onNavigate }:
                     {ws.name}
                   </span>
                   <span className="shrink-0 rounded-md bg-slate-100 px-1.5 py-0.5 text-[11px] tabular-nums text-slate-500 dark:bg-slate-700/60 dark:text-slate-300">
-                    {ws.projectCount ?? 0}
+                    {countByWs.get(ws.id) ?? 0}
                   </span>
                 </button>
-                <div className="flex shrink-0 items-center gap-0.5 opacity-0 transition group-hover:opacity-100">
+
+                {/* 悬浮操作：绝对定位叠在右侧，不占布局，hover 时浮出 */}
+                <div className="pointer-events-none absolute right-1 top-1/2 flex -translate-y-1/2 items-center gap-0.5 rounded-lg bg-white/95 px-1 py-0.5 opacity-0 shadow-sm ring-1 ring-slate-200/70 transition group-hover:pointer-events-auto group-hover:opacity-100 dark:bg-slate-800/95 dark:ring-slate-700/70">
+                  <button
+                    type="button"
+                    onClick={() => void handleRefreshWs(ws.id)}
+                    disabled={refreshingWsId === ws.id}
+                    aria-label={`刷新 ${ws.name} 的项目状态`}
+                    className="rounded-md p-1 text-slate-400 hover:bg-slate-100 hover:text-indigo-600 disabled:opacity-60 dark:hover:bg-slate-700 dark:hover:text-indigo-400"
+                  >
+                    {refreshingWsId === ws.id ? (
+                      <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                    ) : (
+                      <RefreshCw className="h-3.5 w-3.5" />
+                    )}
+                  </button>
                   <button
                     type="button"
                     onClick={() => onEdit(ws)}

@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState, type RefObject } from 'react';
 import clsx from 'clsx';
-import { ArrowDownWideNarrow, ArrowUpNarrowWide, Check, ChevronDown, FilterX, LayoutGrid, List, Search, Tag } from 'lucide-react';
+import { ArrowDownWideNarrow, ArrowUpNarrowWide, Check, ChevronDown, FilterX, LayoutGrid, List, RefreshCw, Search, Tag } from 'lucide-react';
 import { SORT_OPTIONS } from '@/constants/sort';
 import { STATUS_META } from '@/constants/project';
 import { collectTechNames } from '@/lib/filters';
@@ -18,6 +18,8 @@ interface SearchFilterProps {
   techs: string[];
   onToggleTech: (tech: string) => void;
   onClear: () => void;
+  onRefreshAll: () => void;
+  refreshingAll: boolean;
   viewMode: ViewMode;
   onViewMode: (mode: ViewMode) => void;
   sortBy: SortBy;
@@ -37,6 +39,8 @@ export default function SearchFilter({
   techs,
   onToggleTech,
   onClear,
+  onRefreshAll,
+  refreshingAll,
   viewMode,
   onViewMode,
   sortBy,
@@ -176,6 +180,17 @@ export default function SearchFilter({
               清空
             </button>
           )}
+
+          <button
+            type="button"
+            onClick={onRefreshAll}
+            disabled={refreshingAll}
+            title="刷新全部项目的大小、更新时间与存在性（也可在切回页面时自动刷新）"
+            className="inline-flex items-center gap-1.5 rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs font-medium text-slate-600 transition hover:bg-slate-50 disabled:opacity-60 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300 dark:hover:bg-slate-800"
+          >
+            <RefreshCw className={clsx('h-3.5 w-3.5', refreshingAll && 'animate-spin')} />
+            刷新全部
+          </button>
 
           <div className="mx-1 hidden h-5 w-px bg-slate-200 sm:block dark:bg-slate-700" />
 

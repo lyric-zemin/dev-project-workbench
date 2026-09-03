@@ -13,6 +13,7 @@ interface ProjectState {
   projects: Project[];
   loading: boolean;
   refreshingIds: string[];
+  refreshingAll: boolean;
   openingIds: string[];
 
   // 视图与筛选
@@ -48,6 +49,7 @@ interface ProjectState {
   update: (id: string, data: Partial<Project>) => Promise<boolean>;
   remove: (id: string) => Promise<boolean>;
   refresh: (id: string) => Promise<void>;
+  refreshAll: (workspaceId?: string, opts?: { silent?: boolean }) => Promise<void>;
   reorder: (workspaceId: string, ids: string[]) => Promise<void>;
   fetchGit: (id: string) => Promise<GitInfo | null>;
   openWith: (id: string, editorId?: string) => Promise<void>;
@@ -59,6 +61,7 @@ export const useProjectStore = create<ProjectState>((set, get) => ({
   projects: [],
   loading: false,
   refreshingIds: [],
+  refreshingAll: false,
   openingIds: [],
 
   search: '',
@@ -142,6 +145,21 @@ export const useProjectStore = create<ProjectState>((set, get) => ({
       toast.error((err as Error).message);
     } finally {
       set({ refreshingIds: get().refreshingIds.filter((x) => x !== id) });
+    }
+  },
+
+  refreshAll: async (workspaceId, opts) => {
+    if (get().refreshingAll) return;
+    set({ refreshingAll: true });
+    try {
+      const res = await api.refreshProjects(workspaceId);
+      const map = new Map(res.projects.map((p) => [p.id, p]));
+      set({ projects: get().projects.map((p) => map.get(p.id) ?? p) });
+      if (!opts?.silent) toast.success(`已刷新 ${res.updated} 个项目`);
+    } catch (err) {
+      if (!opts?.silent) toast.error((err as Error).message);
+    } finally {
+      set({ refreshingAll: false });
     }
   },
 

@@ -156,6 +156,45 @@ async function buildProjectPayload(input) {
   };
 }
 
+/**
+ * 并发刷新一批项目的核心元数据（size / lastUpdated / exists）。
+ * 仅更新这三个字段，不重跑技术栈、不拉取 Git 信息，成本最低。
+ * 直接 mutate 传入的项目对象（store 内部引用），由调用方统一 persist 一次。
+ * @param {Array} targets 项目对象数组
+ * @returns {Promise<Array>} 实际被更新的项目数组
+ */
+async function refreshProjectsMeta(targets) {
+  if (!targets.length) return [];
+  let cursor = 0;
+  const updated = [];
+  const worker = async () => {
+    while (cursor < targets.length) {
+      const p = targets[cursor++];
+      let exists = false;
+      try {
+        exists = fs.statSync(p.path).isDirectory();
+      } catch {
+        exists = false;
+      }
+      p.exists = exists;
+      if (exists) {
+        try {
+          const meta = await getProjectMeta(p.path);
+          p.size = meta.size;
+          p.lastUpdated = meta.lastUpdated;
+        } catch {
+          /* 统计失败则保留原值 */
+        }
+      }
+      p.updatedAt = store.nowISO();
+      updated.push(p);
+    }
+  };
+  const pool = Math.min(6, targets.length);
+  await Promise.all(Array.from({ length: pool }, () => worker()));
+  return updated;
+}
+
 app.post('/api/projects', asyncHandler(async (req, res) => {
   const db = store.load();
   const { name, path: projectPath, workspaceId, status = 'active', description = '', buildCommand = '' } = req.body || {};
@@ -256,6 +295,22 @@ app.post('/api/projects/:id/refresh', asyncHandler(async (req, res) => {
   project.updatedAt = store.nowISO();
   store.persist();
   res.json(project);
+}));
+
+app.post('/api/projects/refresh', asyncHandler(async (req, res) => {
+  const db = store.load();
+  const { workspaceId, ids } = req.body || {};
+  let targets = db.projects;
+  if (Array.isArray(ids) && ids.length) {
+    const idSet = new Set(ids);
+    targets = db.projects.filter((p) => idSet.has(p.id));
+  } else if (workspaceId && typeof workspaceId === 'string') {
+    targets = db.projects.filter((p) => p.workspaceId === workspaceId);
+  }
+  if (!targets.length) return res.json({ updated: 0, projects: [] });
+  const updated = await refreshProjectsMeta(targets);
+  store.persist();
+  res.json({ updated: updated.length, projects: updated });
 }));
 
 app.get('/api/projects/:id/git', asyncHandler(async (req, res) => {

@@ -60,6 +60,8 @@ export const api = {
   reorderProjects: (workspaceId: string, ids: string[]) =>
     put<{ ok: boolean }>('/api/projects/reorder', { workspaceId, ids }),
   refreshProject: (id: string) => post<Project>(`/api/projects/${id}/refresh`),
+  refreshProjects: (workspaceId?: string) =>
+    post<{ updated: number; projects: Project[] }>('/api/projects/refresh', workspaceId ? { workspaceId } : {}),
   getGitInfo: (id: string) => request<GitInfo>(`/api/projects/${id}/git`),
 
   // 快速操作

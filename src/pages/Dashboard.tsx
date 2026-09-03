@@ -48,6 +48,7 @@ export default function Dashboard() {
   const openDetail = useProjectStore((s) => s.openDetail);
   const contextMenu = useProjectStore((s) => s.contextMenu);
   const setContextMenu = useProjectStore((s) => s.setContextMenu);
+  const refreshingAll = useProjectStore((s) => s.refreshingAll);
 
   const activeWorkspaceId = useWorkspaceStore((s) => s.activeId);
 
@@ -119,6 +120,24 @@ export default function Dashboard() {
     window.addEventListener('beforeunload', handler);
     return () => window.removeEventListener('beforeunload', handler);
   }, [buildJob?.status]);
+
+  // 切回页面 / 窗口聚焦时静默刷新当前范围的核心状态（size/lastUpdated/exists），15s 频控避免抖动
+  useEffect(() => {
+    let lastRun = 0;
+    const run = () => {
+      const now = Date.now();
+      if (now - lastRun < 15000) return;
+      lastRun = now;
+      const activeId = useWorkspaceStore.getState().activeId;
+      void useProjectStore.getState().refreshAll(activeId === 'all' ? undefined : activeId, { silent: true });
+    };
+    document.addEventListener('visibilitychange', run);
+    window.addEventListener('focus', run);
+    return () => {
+      document.removeEventListener('visibilitychange', run);
+      window.removeEventListener('focus', run);
+    };
+  }, []);
 
   const visibleProjects = useMemo(() => {
     const filtered = filterProjects(projects, { workspaceId: activeWorkspaceId, search, statuses, techs });
@@ -233,6 +252,8 @@ export default function Dashboard() {
                 techs={techs}
                 onToggleTech={toggleTech}
                 onClear={clearFilters}
+                onRefreshAll={() => void useProjectStore.getState().refreshAll()}
+                refreshingAll={refreshingAll}
                 viewMode={viewMode}
                 onViewMode={applyViewMode}
                 sortBy={sortBy}
@@ -349,7 +370,7 @@ export default function Dashboard() {
             确定删除工作区「{pendingDeleteWorkspace?.name}」吗？
             <br />
             <span className="text-slate-400">
-              该工作区下的 {pendingDeleteWorkspace?.projectCount ?? 0} 个项目会移动到第一个剩余工作区，不会被删除。
+              该工作区下的 {pendingDeleteWorkspace ? projects.filter((p) => p.workspaceId === pendingDeleteWorkspace.id).length : 0} 个项目会移动到第一个剩余工作区，不会被删除。
             </span>
           </>
         }
