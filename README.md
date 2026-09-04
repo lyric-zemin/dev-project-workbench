@@ -13,7 +13,7 @@
 ![Express](https://img.shields.io/badge/Express-4-000000?logo=express&logoColor=white)
 ![Platform](https://img.shields.io/badge/Platform-Win%20%2F%20macOS%20%2F%20Linux-lightgrey)
 ![License](https://img.shields.io/badge/License-MIT-yellow?logo=opensourceinitiative&logoColor=white)
-![Version](https://img.shields.io/badge/Version-1.0.0-blue)
+![Version](https://img.shields.io/badge/Version-1.1.0-blue)
 
 </div>
 
