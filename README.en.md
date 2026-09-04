@@ -139,7 +139,7 @@ Open `http://localhost:5173`. On first launch the backend seeds default data (3 
 | `npm run dev` | Development mode. Runs the backend (5177, `--watch`) and Vite (5173) concurrently |
 | `npm run build` | Builds the frontend into `dist/` only |
 | `npm run start` | Starts the backend only, serving the existing `dist` |
-| `npm run serve` | Production mode. Builds, then starts with `NODE_ENV=production` on `http://127.0.0.1:5177` |
+| `npm run serve` | Production mode. Builds, then starts the backend on `http://127.0.0.1:5177` serving both API and `dist` |
 | `npm run typecheck` | TypeScript type checking (`tsc --noEmit`) |
 
 > `npm run start` checks for the `dist` directory only once at startup — after building, restart the service for changes to take effect. Use `npm run serve` for production deployments.
@@ -194,10 +194,16 @@ Available on the settings page (`/settings`), persisted in `server/data/store.js
 
 | Variable | Default | Description |
 | :--- | :--- | :--- |
-| `PORT` | `5177` | Backend listening port (the Electron main process reads it too) |
-| `NODE_ENV` | — | When set to `production`, Express serves the `dist` static assets |
+| `DWB_PORT` | `5177` | Backend listening port, injected by Electron; namespaced so child projects never inherit it |
+| `PORT` | `5177` | Port override from the command line; lower priority than `DWB_PORT` |
 | `DWB_DATA_DIR` | `server/data` | Data directory. In packaged Electron builds this points to `userData/data` |
+| `DWB_DIST_DIR` | `<root>/dist` | Frontend asset directory. In packaged builds it points to the real `dist` outside the asar |
 | `ELECTRON_MIRROR` | — | Electron binary download mirror; needed only during install / packaging |
+
+> The backend shares `process.env` with the Electron main process, so the app only injects
+> `DWB_`-prefixed variables. Child processes (editors / terminals / builds) always have
+> `PORT`, `NODE_ENV` and `DWB_*` stripped, keeping your projects on their own environment.
+> Whether `dist` is served depends on that directory existing, not on `NODE_ENV`.
 
 ### Keyboard Shortcuts
 

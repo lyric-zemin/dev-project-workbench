@@ -17,7 +17,11 @@ import { startBuild, stopBuild, getJob, serializeJob, listJobs, subscribeJob } f
 import { API_PORT as DEFAULT_API_PORT } from '../shared/ports.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const PORT = Number(process.env.PORT || DEFAULT_API_PORT);
+// 端口优先级：DWB_PORT（Electron 注入，带命名空间）> PORT（命令行覆盖）> 默认值。
+// 注入之所以不用 PORT 这个通用名：后端与 Electron 主进程同处一个进程，通用名会被
+// 后端 spawn 出的编辑器 / 终端 / 构建子进程继承，导致项目自身的 dev server 误与
+// 本后端争抢端口（子进程环境净化见 server/services/env.js）。
+const PORT = Number(process.env.DWB_PORT || process.env.PORT || DEFAULT_API_PORT);
 // Electron 打包时由 main 进程通过 DWB_DIST_DIR 注入解包后的真实 dist 路径（asar 外），
 // 否则回退到开发模式相对路径（<root>/dist）。
 const DIST_DIR = process.env.DWB_DIST_DIR && process.env.DWB_DIST_DIR.trim()

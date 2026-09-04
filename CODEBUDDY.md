@@ -7,7 +7,7 @@
 | `npm install` | 安装全部依赖（前端 + 后端共用一份 `package.json`，无 workspaces）。 |
 | `npm run dev` | 开发模式。用 concurrently 同时启动 `node --watch server/index.js`（后端，端口 5177）与 `vite`（前端，端口 5173）。访问 `http://localhost:5173`，`/api` 由 Vite 代理转发。改后端代码会自动重启。 |
 | `npm run build` | 仅构建前端到 `dist/`（纯 `vite build`，不做类型检查）。 |
-| `npm run serve` | 生产模式：先 `vite build` 再 `cross-env NODE_ENV=production node server/index.js`，Express 单端口 `http://127.0.0.1:5177` 同时托管 API 与 `dist`。 |
+| `npm run serve` | 生产模式：先 `vite build` 再 `node server/index.js`，Express 单端口 `http://127.0.0.1:5177` 同时托管 API 与 `dist`。 |
 | `npm start` | 只启动后端托管已有的 `dist`。注意：`dist` 存在性在启动时判定一次，构建后需重启服务才会生效。 |
 | `npm run typecheck` | `tsc --noEmit`。`tsconfig.json` 开启了 `noUnusedLocals` 与 `noUnusedParameters`，未使用的变量/参数会直接报错。 |
 | `curl.exe -s http://127.0.0.1:5177/api/health` | 后端存活探针。PowerShell 里 `curl` 是 `Invoke-WebRequest` 别名，务必用 `curl.exe`；POST 传 JSON 请先写入临时文件再用 `--data-binary "@file.json"`，避免引号被 PowerShell 吃掉。 |

@@ -10,6 +10,7 @@ import { DEFAULT_EDITORS } from './services/editorCommands.js';
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 // Electron 打包后 server/ 处于只读的 resources 目录，数据需写入用户可写目录。
 // 通过环境变量 DWB_DATA_DIR 注入（electron/main.js 会使用 app.getPath('userData')）。
+// 必须在后端被 import 之前设置：DATA_DIR 是模块级常量，之后再改无效。
 export const DATA_DIR =
   process.env.DWB_DATA_DIR && process.env.DWB_DATA_DIR.trim()
     ? process.env.DWB_DATA_DIR

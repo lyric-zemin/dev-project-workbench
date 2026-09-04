@@ -5,6 +5,7 @@
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import { execFile } from 'node:child_process';
+import { childEnv } from './env.js';
 import { META_IGNORE_DIRS } from '../constants.js';
 
 /** 依赖名 -> 技术项 */
@@ -353,14 +354,14 @@ export function getGitInfo(projectPath) {
     execFile(
       'git',
       ['-C', projectPath, 'log', '-1', `--pretty=format:${format}`, '--date=iso'],
-      { timeout: 6000, windowsHide: true },
+      { timeout: 6000, windowsHide: true, env: childEnv() },
       (err, stdout) => {
         if (err || !stdout || !stdout.trim()) return resolve(null);
         const [hash, author, date, subject] = stdout.split('\n');
         execFile(
           'git',
           ['-C', projectPath, 'rev-parse', '--abbrev-ref', 'HEAD'],
-          { timeout: 4000, windowsHide: true },
+          { timeout: 4000, windowsHide: true, env: childEnv() },
           (err2, branchOut) =>
             resolve({
               hash: (hash || '').slice(0, 8),

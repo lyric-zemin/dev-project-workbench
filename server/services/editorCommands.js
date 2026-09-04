@@ -3,6 +3,7 @@
  * 使用 child_process 打开编辑器 / 文件管理器，支持 Windows / macOS / Linux。
  */
 import { spawn } from 'node:child_process';
+import { childEnv } from './env.js';
 
 const PLATFORMS = ['win32', 'darwin', 'linux'];
 
@@ -145,6 +146,7 @@ function commandExists(command) {
     const probe = spawn(isWin ? 'where' : 'sh', isWin ? [command] : ['-c', `command -v ${command}`], {
       stdio: 'ignore',
       shell: isWin,
+      env: childEnv(),
     });
     let done = false;
     const finish = (val) => {
@@ -194,6 +196,7 @@ export function openWithEditor(editor, projectPath) {
     stdio: 'ignore',
     shell: isWin,
     windowsHide: true,
+    env: childEnv(),
   });
   child.on('error', (err) => {
     console.error(`[editor] 启动 ${editor.name} 失败:`, err.message);
@@ -217,7 +220,7 @@ export function revealInExplorer(targetPath) {
     command = 'xdg-open';
     args = [targetPath];
   }
-  const child = spawn(command, args, { detached: true, stdio: 'ignore', shell: false });
+  const child = spawn(command, args, { detached: true, stdio: 'ignore', shell: false, env: childEnv() });
   child.on('error', (err) => console.error('[explorer] 打开失败:', err.message));
   child.unref();
   return { ok: true, command: `${command} ${args.join(' ')}` };
@@ -232,6 +235,7 @@ export function openInTerminal(targetPath) {
       stdio: 'ignore',
       shell: true,
       windowsHide: false,
+      env: childEnv(),
     });
     child.on('error', (err) => console.error('[terminal] 打开失败:', err.message));
     child.unref();
@@ -239,10 +243,10 @@ export function openInTerminal(targetPath) {
   }
   const command = platform === 'darwin' ? 'open' : 'x-terminal-emulator';
   const args = platform === 'darwin' ? ['-a', 'Terminal', targetPath] : ['--working-directory', targetPath];
-  const child = spawn(command, args, { detached: true, stdio: 'ignore' });
+  const child = spawn(command, args, { detached: true, stdio: 'ignore', env: childEnv() });
   child.on('error', () => {
     // 回退到 xdg-open
-    const fallback = spawn('xdg-open', [targetPath], { detached: true, stdio: 'ignore' });
+    const fallback = spawn('xdg-open', [targetPath], { detached: true, stdio: 'ignore', env: childEnv() });
     fallback.unref();
   });
   child.unref();

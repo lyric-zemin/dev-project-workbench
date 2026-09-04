@@ -4,6 +4,8 @@
  * 工作原理：
  *  - Electron 主进程本身就是 Node 运行时，直接加载 server/index.js 启动后端，
  *    无需额外打包 Node 或 spawn 子进程。
+ *  - 配置一律用带 DWB_ 前缀的环境变量注入。后端与本进程共享 process.env，占用
+ *    PORT / NODE_ENV 这类通用名会污染后端 spawn 出的编辑器 / 终端 / 构建子进程。
  *  - 数据目录通过 DWB_DATA_DIR 注入 app.getPath('userData')，避免写入只读的
  *    asar 资源目录（开发模式沿用 server/data）。
  *  - 主窗口加载 http://127.0.0.1:5177（Express 托管的前端 dist）。
@@ -16,7 +18,7 @@ import { API_PORT as DEFAULT_API_PORT } from '../shared/ports.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const isPackaged = app.isPackaged;
-const API_PORT = Number(process.env.PORT || DEFAULT_API_PORT);
+const API_PORT = Number(process.env.DWB_PORT || process.env.PORT || DEFAULT_API_PORT);
 
 // 文件位置：
 //   开发模式：electron/main.js 位于 <root>/electron，projectRoot = <root>
@@ -40,10 +42,14 @@ function startBackend() {
     ? path.join(process.resourcesPath, 'app.asar.unpacked', 'dist')
     : path.join(projectRoot, 'dist');
 
+  // 配置一律用带 DWB_ 前缀的变量注入：后端被 import() 进本进程，共享同一份
+  // process.env，若占用 PORT / NODE_ENV 这类通用变量名，后端 spawn 出的编辑器 /
+  // 终端 / 构建子进程会一并继承，从而运行在错误的环境（详见 server/services/env.js）。
+  // NODE_ENV 不再注入：后端从未读取它，静态资源托管由 fs.existsSync(DIST_DIR) 判定。
+  // 注意：下面三行必须在 import(serverEntry) 之前执行，store.js 的 DATA_DIR 是模块级常量。
   process.env.DWB_DATA_DIR = dataDir;
   process.env.DWB_DIST_DIR = distDir;
-  process.env.PORT = String(API_PORT);
-  process.env.NODE_ENV = 'production';
+  process.env.DWB_PORT = String(API_PORT);
 
   // Electron 主进程自带 Node，直接加载后端入口即可。
   // 注意：Windows 下 ESM 的 import() 必须传 file:// URL，不能用裸绝对路径。

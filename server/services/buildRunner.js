@@ -4,6 +4,7 @@
 import { spawn } from 'node:child_process';
 import path from 'node:path';
 import { uid } from '../store.js';
+import { childEnv } from './env.js';
 
 const MAX_LOG_LINES = 3000;
 const MAX_KEEP_JOBS = 20;
@@ -72,7 +73,7 @@ export function parseCommand(command) {
 }
 
 function buildEnv(cwd) {
-  const env = { ...process.env, FORCE_COLOR: '0', NO_COLOR: '1', CI: '' };
+  const env = childEnv({ FORCE_COLOR: '0', NO_COLOR: '1', CI: '' });
   const binDir = path.join(cwd, 'node_modules', '.bin');
   const sep = process.platform === 'win32' ? ';' : ':';
   env.PATH = `${binDir}${sep}${env.PATH || env.Path || ''}`;

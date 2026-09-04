@@ -139,7 +139,7 @@ npm run dev
 | `npm run dev` | 开发模式。并发启动后端（5177，`--watch`）与 Vite（5173） |
 | `npm run build` | 仅构建前端产物到 `dist/` |
 | `npm run start` | 仅启动后端，托管已有的 `dist` |
-| `npm run serve` | 生产模式。先构建再以 `NODE_ENV=production` 启动，单端口 `http://127.0.0.1:5177` |
+| `npm run serve` | 生产模式。先构建再启动后端，单端口 `http://127.0.0.1:5177` 同时托管 API 与 `dist` |
 | `npm run typecheck` | TypeScript 类型检查（`tsc --noEmit`） |
 
 > `npm run start`：目录 `dist` 是否存在只在启动时判定一次，构建后需重启服务才会生效。生产部署请直接使用 `npm run serve`。
@@ -194,10 +194,15 @@ npm run dist:win:portable    # 仅单文件便携版（免安装）
 
 | 变量 | 默认值 | 说明 |
 | :--- | :--- | :--- |
-| `PORT` | `5177` | 后端监听端口（Electron 主进程同样读取它） |
-| `NODE_ENV` | — | 设为 `production` 时 Express 托管 `dist` 静态资源 |
+| `DWB_PORT` | `5177` | 后端监听端口。Electron 启动时注入；带命名空间以免被子项目进程继承 |
+| `PORT` | `5177` | 命令行下的端口覆盖，优先级低于 `DWB_PORT` |
 | `DWB_DATA_DIR` | `server/data` | 数据存储目录。Electron 打包后自动指向 `userData/data` |
+| `DWB_DIST_DIR` | `<root>/dist` | 前端静态资源目录。Electron 打包后指向 asar 外的真实 `dist` |
 | `ELECTRON_MIRROR` | — | Electron 二进制下载镜像，仅安装 / 打包阶段需要 |
+
+> 后端与 Electron 主进程共享同一份 `process.env`，因此应用只注入带 `DWB_` 前缀的变量。
+> 派生出的子进程（编辑器 / 终端 / 构建）一律剔除 `PORT`、`NODE_ENV` 与 `DWB_*`，避免项目
+> 运行在错误的环境中。是否托管 `dist` 静态资源由该目录是否存在决定，与 `NODE_ENV` 无关。
 
 ### 快捷键
 
