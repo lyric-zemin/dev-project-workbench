@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import clsx from 'clsx';
 import { Check, FolderSearch, Loader2, ScanLine } from 'lucide-react';
 import Modal from './Modal';
@@ -9,6 +9,7 @@ import { formatBytes } from '@/lib/format';
 import { toast } from '@/stores/toastStore';
 import { useWorkspaceStore } from '@/stores/workspaceStore';
 import { useProjectStore } from '@/stores/projectStore';
+import { useSettingsStore } from '@/stores/settingsStore';
 import type { ScanCandidate } from '@/types';
 
 interface ScanModalProps {
@@ -22,7 +23,13 @@ export default function ScanModal({ open, onClose }: ScanModalProps) {
   const setAll = useProjectStore((s) => s.setAll);
 
   const [rootPath, setRootPath] = useState('');
-  const [maxDepth, setMaxDepth] = useState(3);
+
+  // 默认扫描深度跟随全局配置；每次打开弹窗时重新同步，单次扫描仍可手动覆盖
+  const scanMaxDepth = useSettingsStore((s) => s.settings.scanMaxDepth);
+  const [maxDepth, setMaxDepth] = useState(scanMaxDepth);
+  useEffect(() => {
+    if (open) setMaxDepth(useSettingsStore.getState().settings.scanMaxDepth);
+  }, [open]);
   const [pickerOpen, setPickerOpen] = useState(false);
   const [scanning, setScanning] = useState(false);
   const [results, setResults] = useState<ScanCandidate[]>([]);

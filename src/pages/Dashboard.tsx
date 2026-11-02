@@ -370,14 +370,14 @@ export default function Dashboard() {
             确定删除工作区「{pendingDeleteWorkspace?.name}」吗？
             <br />
             <span className="text-slate-400">
-              该工作区下的 {pendingDeleteWorkspace ? projects.filter((p) => p.workspaceId === pendingDeleteWorkspace.id).length : 0} 个项目会移动到第一个剩余工作区，不会被删除。
+              该工作区下的 {pendingDeleteWorkspace ? projects.filter((p) => p.workspaceId === pendingDeleteWorkspace.id).length : 0} 个项目会一并删除，且不可恢复。
             </span>
           </>
         }
-        confirmText="删除工作区"
+        confirmText="删除工作区及项目"
         onCancel={() => setPendingDeleteWorkspace(null)}
         onConfirm={() => {
-          if (pendingDeleteWorkspace) void useWorkspaceStore.getState().remove(pendingDeleteWorkspace.id, 'move');
+          if (pendingDeleteWorkspace) void useWorkspaceStore.getState().remove(pendingDeleteWorkspace.id, 'delete');
           setPendingDeleteWorkspace(null);
         }}
       />

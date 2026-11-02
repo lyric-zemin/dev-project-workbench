@@ -48,6 +48,7 @@ interface ProjectState {
   create: (data: Parameters<typeof api.createProject>[0]) => Promise<boolean>;
   update: (id: string, data: Partial<Project>) => Promise<boolean>;
   remove: (id: string) => Promise<boolean>;
+  removeByWorkspace: (workspaceId: string) => void;
   refresh: (id: string) => Promise<void>;
   refreshAll: (workspaceId?: string, opts?: { silent?: boolean }) => Promise<void>;
   reorder: (workspaceId: string, ids: string[]) => Promise<void>;
@@ -133,6 +134,15 @@ export const useProjectStore = create<ProjectState>((set, get) => ({
       toast.error((err as Error).message);
       return false;
     }
+  },
+
+  removeByWorkspace: (workspaceId) => {
+    const remaining = get().projects.filter((p) => p.workspaceId !== workspaceId);
+    const openDetail = get().detailId;
+    set({
+      projects: remaining,
+      detailId: openDetail && remaining.some((p) => p.id === openDetail) ? openDetail : null,
+    });
   },
 
   refresh: async (id) => {

@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { api } from '@/lib/api';
 import { toast } from './toastStore';
+import { useProjectStore } from './projectStore';
 import type { Workspace } from '@/types';
 
 interface WorkspaceState {
@@ -57,6 +58,7 @@ export const useWorkspaceStore = create<WorkspaceState>((set, get) => ({
       await api.deleteWorkspace(id, { mode, moveTo: get().workspaces.find((w) => w.id !== id)?.id });
       const next = get().workspaces.filter((w) => w.id !== id);
       set({ workspaces: next, activeId: get().activeId === id ? 'all' : get().activeId });
+      if (mode === 'delete') useProjectStore.getState().removeByWorkspace(id);
       toast.success(`已删除工作区「${target.name}」`);
       return true;
     } catch (err) {
