@@ -52,7 +52,12 @@ export default function ProjectListItem({
           </span>
           {project.exists === false && <AlertTriangle className="h-3.5 w-3.5 shrink-0 text-amber-500" />}
         </div>
-        <p className="mt-0.5 flex items-center gap-1 truncate text-xs text-slate-400 dark:text-slate-500 md:hidden">
+        {project.description && (
+          <p className="mt-0.5 truncate pl-4 text-xs text-slate-500 dark:text-slate-400" title={project.description}>
+            {project.description}
+          </p>
+        )}
+        <p className={clsx('mt-0.5 flex items-center gap-1 truncate pl-4 text-xs text-slate-400 dark:text-slate-500 md:hidden', project.description && 'mt-0')}>
           <FolderOpen className="h-3 w-3 shrink-0" />
           {project.path}
         </p>
