@@ -54,6 +54,7 @@ export const api = {
     status?: Project['status'];
     description?: string;
     buildCommand?: string;
+    editorId?: string;
   }) => post<Project>('/api/projects', data),
   updateProject: (id: string, data: Partial<Project>) => put<Project>(`/api/projects/${id}`, data),
   deleteProject: (id: string) => del<{ ok: boolean }>(`/api/projects/${id}`),
@@ -65,7 +66,8 @@ export const api = {
   getGitInfo: (id: string) => request<GitInfo>(`/api/projects/${id}/git`),
 
   // 快速操作
-  openProject: (id: string, editorId?: string) => post<{ ok: boolean; editor: string }>(`/api/projects/${id}/open`, { editorId }),
+  openProject: (id: string, editorId?: string) =>
+    post<{ ok: boolean; editor: string; note?: string; fallbackUsed?: boolean }>(`/api/projects/${id}/open`, { editorId }),
   revealProject: (id: string) => post<{ ok: boolean }>(`/api/projects/${id}/reveal`),
   openTerminal: (id: string) => post<{ ok: boolean }>(`/api/projects/${id}/terminal`),
 

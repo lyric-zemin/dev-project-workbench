@@ -18,6 +18,8 @@ export interface Project {
   status: ProjectStatus;
   description?: string;
   buildCommand?: string;
+  /** 项目级编辑器 id；为空时沿用全局默认编辑器 */
+  editorId?: string;
   techStack: TechStack[];
   size: number;
   createdAt: string;
@@ -57,6 +59,8 @@ export type ThemeMode = 'light' | 'dark' | 'system';
 export interface AppSettings {
   theme: ThemeMode;
   defaultEditorId: string;
+  /** 上次选中的工作区 id（'all' 表示全部项目） */
+  activeWorkspaceId: string;
   buildCommand: string;
   viewMode: ViewMode;
   sortBy: SortBy;

@@ -38,6 +38,7 @@ export default function Settings() {
   const projects = useProjectStore((s) => s.projects);
   const workspaces = useWorkspaceStore((s) => s.workspaces);
   const setAllWorkspaces = useWorkspaceStore((s) => s.setAll);
+  const restoreActive = useWorkspaceStore((s) => s.restoreActive);
 
   const [newEditor, setNewEditor] = useState({ name: '', command: '' });
   const fileRef = useRef<HTMLInputElement>(null);
@@ -55,6 +56,8 @@ export default function Settings() {
       setAllWorkspaces(boot.workspaces);
       setAllProjects(boot.projects);
       useSettingsStore.getState().hydrate({ settings: boot.settings, platform: boot.platform, homeDir: boot.homeDir });
+      // 导入后工作区集合已变化，重新按持久化 id 恢复选中项
+      restoreActive(boot.settings.activeWorkspaceId);
       toast.success('数据已恢复');
     } catch (err) {
       toast.error(`导入失败：${(err as Error).message}`);

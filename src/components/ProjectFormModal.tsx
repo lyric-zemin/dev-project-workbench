@@ -22,6 +22,8 @@ export default function ProjectFormModal({ open, project, onClose }: ProjectForm
   const update = useProjectStore((s) => s.update);
   const homeDir = useSettingsStore((s) => s.homeDir);
   const defaultBuildCommand = useSettingsStore((s) => s.settings.buildCommand);
+  const editors = useSettingsStore((s) => s.editors);
+  const defaultEditorId = useSettingsStore((s) => s.settings.defaultEditorId);
 
   const [name, setName] = useState('');
   const [projectPath, setProjectPath] = useState('');
@@ -29,6 +31,7 @@ export default function ProjectFormModal({ open, project, onClose }: ProjectForm
   const [status, setStatus] = useState<ProjectStatus>('active');
   const [description, setDescription] = useState('');
   const [buildCommand, setBuildCommand] = useState('');
+  const [editorId, setEditorId] = useState('');
   const [pickerOpen, setPickerOpen] = useState(false);
   const [submitting, setSubmitting] = useState(false);
 
@@ -41,6 +44,7 @@ export default function ProjectFormModal({ open, project, onClose }: ProjectForm
       setStatus(project.status);
       setDescription(project.description || '');
       setBuildCommand(project.buildCommand || '');
+      setEditorId(project.editorId || '');
     } else {
       setName('');
       setProjectPath('');
@@ -48,9 +52,14 @@ export default function ProjectFormModal({ open, project, onClose }: ProjectForm
       setStatus('active');
       setDescription('');
       setBuildCommand('');
+      setEditorId('');
     }
     setPickerOpen(false);
   }, [open, project, activeId, workspaces]);
+
+  // 项目引用的编辑器可能已被删除，渲染与提交时都回退为「跟随默认」
+  const defaultEditor = editors.find((e) => e.id === defaultEditorId);
+  const editorValue = editorId && editors.some((e) => e.id === editorId) ? editorId : '';
 
   const submit = async () => {
     if (!projectPath.trim()) return;
@@ -63,6 +72,7 @@ export default function ProjectFormModal({ open, project, onClose }: ProjectForm
       status,
       description: description.trim(),
       buildCommand: buildCommand.trim(),
+      editorId: editorValue,
     };
     const ok = project ? await update(project.id, payload) : await create(payload);
     setSubmitting(false);
@@ -158,6 +168,22 @@ export default function ProjectFormModal({ open, project, onClose }: ProjectForm
               </div>
             </Field>
           </div>
+
+          <Field label="打开方式" hint={`留空则跟随全局默认编辑器：${defaultEditor?.name ?? '未设置'}`}>
+            <select
+              value={editorValue}
+              onChange={(e) => setEditorId(e.target.value)}
+              className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100"
+            >
+              <option value="">跟随默认（{defaultEditor?.name ?? '未设置'}）</option>
+              {editors.map((editor) => (
+                <option key={editor.id} value={editor.id} disabled={editor.installed === false}>
+                  {editor.name}
+                  {editor.installed === false ? '（未检测到）' : ''}
+                </option>
+              ))}
+            </select>
+          </Field>
 
           <Field label="构建命令" hint={`留空则使用全局默认命令：${defaultBuildCommand}`}>
             <input

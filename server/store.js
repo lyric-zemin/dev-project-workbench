@@ -24,6 +24,7 @@ export const uid = (prefix = 'id') =>
 export const DEFAULT_SETTINGS = {
   theme: 'system',
   defaultEditorId: 'vscode',
+  activeWorkspaceId: 'all',
   buildCommand: 'npm run build',
   viewMode: 'grid',
   sortBy: 'custom',
@@ -61,6 +62,11 @@ function normalize(data) {
   merged.projects = Array.isArray(data?.projects) ? data.projects : base.projects;
   merged.editors = Array.isArray(data?.editors) && data.editors.length ? data.editors : base.editors;
   merged.settings = { ...base.settings, ...(data?.settings || {}) };
+  // 上次选中的工作区若已不存在（被删除或来自旧备份），回退到「全部」
+  const savedWorkspace = merged.settings.activeWorkspaceId;
+  if (savedWorkspace !== 'all' && !merged.workspaces.some((w) => w.id === savedWorkspace)) {
+    merged.settings.activeWorkspaceId = 'all';
+  }
   merged.workspaces.forEach((w, i) => {
     w.order = typeof w.order === 'number' ? w.order : i;
     w.color = w.color || 'indigo';
@@ -71,6 +77,8 @@ function normalize(data) {
     p.techStack = Array.isArray(p.techStack) ? p.techStack : [];
     p.status = p.status || 'active';
     p.size = typeof p.size === 'number' ? p.size : 0;
+    // 引用了已被删除的编辑器时清空，回退到全局默认编辑器
+    if (p.editorId && !merged.editors.some((e) => e.id === p.editorId)) delete p.editorId;
   });
   return merged;
 }

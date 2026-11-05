@@ -21,6 +21,8 @@ export default function App() {
       .then((payload) => {
         if (!alive) return;
         useWorkspaceStore.getState().setAll(payload.workspaces);
+        // 恢复上次选中的工作区；记录失效时 restoreActive 会自动回退到「全部」
+        useWorkspaceStore.getState().restoreActive(payload.settings.activeWorkspaceId);
         useProjectStore.getState().setAll(payload.projects);
         useSettingsStore.getState().hydrate({
           settings: payload.settings,

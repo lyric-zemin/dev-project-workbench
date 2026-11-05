@@ -75,7 +75,8 @@ export function useProjectActions({ onBuild, onRequestDelete }: Handlers): Proje
           },
           {
             key: 'open-default',
-            label: `用${editors.find((e) => e.id === defaultEditorId)?.name || '默认编辑器'}打开`,
+            // 菜单文案优先反映项目级选择，未指定时回落到全局默认编辑器
+            label: `用${editors.find((e) => e.id === project.editorId)?.name || editors.find((e) => e.id === defaultEditorId)?.name || '默认编辑器'}打开`,
             icon: <Code2 className="h-4 w-4" />,
             onClick: () => void openWith(project.id),
           },

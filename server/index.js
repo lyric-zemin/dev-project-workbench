@@ -201,7 +201,7 @@ async function refreshProjectsMeta(targets) {
 
 app.post('/api/projects', asyncHandler(async (req, res) => {
   const db = store.load();
-  const { name, path: projectPath, workspaceId, status = 'active', description = '', buildCommand = '' } = req.body || {};
+  const { name, path: projectPath, workspaceId, status = 'active', description = '', buildCommand = '', editorId = '' } = req.body || {};
   if (!projectPath || !String(projectPath).trim()) throw httpError(400, '项目路径不能为空');
   const resolved = path.resolve(String(projectPath).trim());
   if (!db.workspaces.some((w) => w.id === workspaceId)) throw httpError(400, '请选择有效的工作区');
@@ -219,6 +219,7 @@ app.post('/api/projects', asyncHandler(async (req, res) => {
     status: ['active', 'maintenance', 'archived'].includes(status) ? status : 'active',
     description: String(description || '').slice(0, 500),
     buildCommand: String(buildCommand || '').trim(),
+    ...(editorId && db.editors.some((e) => e.id === editorId) ? { editorId } : {}),
     techStack: scanned.techStack,
     size: scanned.size,
     createdAt: scanned.createdAt,
@@ -247,7 +248,7 @@ app.put('/api/projects/:id', asyncHandler(async (req, res) => {
   const db = store.load();
   const project = db.projects.find((p) => p.id === req.params.id);
   if (!project) throw httpError(404, '项目不存在');
-  const { name, path: newPath, workspaceId, status, description, buildCommand } = req.body || {};
+  const { name, path: newPath, workspaceId, status, description, buildCommand, editorId } = req.body || {};
 
   if (newPath !== undefined && path.resolve(newPath) !== path.resolve(project.path)) {
     const resolved = path.resolve(String(newPath).trim());
@@ -265,6 +266,16 @@ app.put('/api/projects/:id', asyncHandler(async (req, res) => {
   if (status !== undefined && ['active', 'maintenance', 'archived'].includes(status)) project.status = status;
   if (description !== undefined) project.description = String(description).slice(0, 500);
   if (buildCommand !== undefined) project.buildCommand = String(buildCommand).trim();
+  // 项目级编辑器：空值表示跟随全局默认，非法 id 直接拒绝，避免静默失效
+  if (editorId !== undefined) {
+    if (!editorId) {
+      delete project.editorId;
+    } else if (db.editors.some((e) => e.id === editorId)) {
+      project.editorId = editorId;
+    } else {
+      throw httpError(400, '指定的编辑器不存在或已被删除');
+    }
+  }
   if (workspaceId !== undefined && db.workspaces.some((w) => w.id === workspaceId)) {
     if (workspaceId !== project.workspaceId) {
       const target = db.projects.filter((p) => p.workspaceId === workspaceId && p.id !== project.id);
@@ -328,21 +339,50 @@ app.get('/api/projects/:id/git', asyncHandler(async (req, res) => {
 /* 快速操作                                                            */
 /* ------------------------------------------------------------------ */
 
-app.post('/api/projects/:id/open', (req, res) => {
+app.post('/api/projects/:id/open', asyncHandler(async (req, res) => {
   const db = store.load();
   const project = db.projects.find((p) => p.id === req.params.id);
   if (!project) throw httpError(404, '项目不存在');
   if (!fs.existsSync(project.path)) throw httpError(400, `路径不存在：${project.path}`);
-  const editorId = req.body?.editorId || db.settings.defaultEditorId;
-  const editor = db.editors.find((e) => e.id === editorId) || db.editors[0];
-  if (!editor) throw httpError(400, '没有可用的编辑器，请先在设置中添加');
+
+  // 优先级：本次请求显式指定 > 项目级选择 > 全局默认
+  const requestedId = req.body?.editorId || project.editorId || db.settings.defaultEditorId;
+  // getEditors 会附带 installed 标记并按当前平台过滤
+  const editors = await getEditors(db.editors);
+  const requested = editors.find((e) => e.id === requestedId);
+
   try {
-    const result = openWithEditor(editor, project.path);
-    res.json({ ok: true, editor: editor.name, ...result });
+    if (requested?.installed) {
+      const result = openWithEditor(requested, project.path);
+      res.json({ ok: true, editor: requested.name, ...result });
+      return;
+    }
+    // 指定编辑器不存在 / 不可用 / 未安装时，回退到全局默认，再退到任意可用编辑器
+    const fallback =
+      editors.find((e) => e.id === db.settings.defaultEditorId && e.installed) ||
+      editors.find((e) => e.installed && e.id !== requested?.id) ||
+      editors.find((e) => e.installed);
+    if (!fallback) {
+      const reason = requested ? `未检测到 ${requested.name}` : '指定的编辑器不存在或当前系统不可用';
+      throw httpError(400, `${reason}，且本机没有其他可用编辑器，请先在设置中安装或添加编辑器`);
+    }
+    const result = openWithEditor(fallback, project.path);
+    const reason = requested
+      ? `未检测到 ${requested.name}，已改用 ${fallback.name} 打开`
+      : `指定的编辑器不可用，已改用 ${fallback.name} 打开`;
+    res.json({
+      ok: true,
+      editor: fallback.name,
+      requestedEditor: requested?.name,
+      fallbackUsed: true,
+      note: reason,
+      ...result,
+    });
   } catch (err) {
-    throw httpError(500, `启动 ${editor.name} 失败：${err.message}`);
+    if (err.status) throw err;
+    throw httpError(500, `启动编辑器失败：${err.message}`);
   }
-});
+}));
 
 app.post('/api/projects/:id/reveal', (req, res) => {
   const project = store.getProjects().find((p) => p.id === req.params.id);
@@ -517,6 +557,10 @@ app.delete('/api/editors/:id', (req, res) => {
   if (!editor.custom) throw httpError(400, '内置编辑器不可删除');
   db.editors = db.editors.filter((e) => e.id !== req.params.id);
   if (db.settings.defaultEditorId === editor.id) db.settings.defaultEditorId = 'vscode';
+  // 清除项目上的引用，避免打开时指向已删除的编辑器
+  db.projects.forEach((p) => {
+    if (p.editorId === editor.id) delete p.editorId;
+  });
   clearEditorCache();
   store.persist();
   res.json({ ok: true });

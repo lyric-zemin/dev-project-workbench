@@ -13,6 +13,7 @@ import type { AppSettings } from '@/types';
 export const DEFAULT_SETTINGS: AppSettings = {
   theme: 'system',
   defaultEditorId: 'vscode',
+  activeWorkspaceId: 'all',
   buildCommand: 'npm run build',
   viewMode: 'grid',
   sortBy: 'custom',

@@ -200,7 +200,9 @@ export const useProjectStore = create<ProjectState>((set, get) => ({
     set({ openingIds: [...get().openingIds, id] });
     try {
       const res = await api.openProject(id, editorId);
-      toast.success(`正在用 ${res.editor} 打开「${project?.name ?? ''}」`);
+      // 服务端在目标编辑器不可用时会附带回退说明，用 info 级别提示以免误导
+      if (res.note) toast.info(res.note);
+      else toast.success(`正在用 ${res.editor} 打开「${project?.name ?? ''}」`);
     } catch (err) {
       toast.error((err as Error).message);
     } finally {
