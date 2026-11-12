@@ -57,9 +57,9 @@ export default function ProjectFormModal({ open, project, onClose }: ProjectForm
     setPickerOpen(false);
   }, [open, project, activeId, workspaces]);
 
-  // 项目引用的编辑器可能已被删除，渲染与提交时都回退为「跟随默认」
+  // 项目引用的编辑器可能已被删除或未安装，渲染与提交时都回退为「跟随默认」
   const defaultEditor = editors.find((e) => e.id === defaultEditorId);
-  const editorValue = editorId && editors.some((e) => e.id === editorId) ? editorId : '';
+  const editorValue = editorId && editors.some((e) => e.id === editorId && e.installed !== false) ? editorId : '';
 
   const submit = async () => {
     if (!projectPath.trim()) return;
@@ -176,12 +176,14 @@ export default function ProjectFormModal({ open, project, onClose }: ProjectForm
               className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100"
             >
               <option value="">跟随默认（{defaultEditor?.name ?? '未设置'}）</option>
-              {editors.map((editor) => (
-                <option key={editor.id} value={editor.id} disabled={editor.installed === false}>
-                  {editor.name}
-                  {editor.installed === false ? '（未检测到）' : ''}
-                </option>
-              ))}
+              {/* 只列出已安装的编辑器，未检测到的直接不展示 */}
+              {editors
+                .filter((editor) => editor.installed !== false)
+                .map((editor) => (
+                  <option key={editor.id} value={editor.id}>
+                    {editor.name}
+                  </option>
+                ))}
             </select>
           </Field>
 
